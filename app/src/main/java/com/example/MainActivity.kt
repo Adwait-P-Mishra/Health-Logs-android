@@ -92,14 +92,8 @@ fun AppNavigation(
         composable("splash") {
             SplashScreen(
                 onSplashFinished = {
-                    if (onboardingCompleted) {
-                        navController.navigate("dashboard") {
-                            popUpTo("splash") { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate("onboarding") {
-                            popUpTo("splash") { inclusive = true }
-                        }
+                    navController.navigate("dashboard") {
+                        popUpTo("splash") { inclusive = true }
                     }
                 }
             )

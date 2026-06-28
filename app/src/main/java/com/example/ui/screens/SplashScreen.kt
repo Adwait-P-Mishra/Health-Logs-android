@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,14 +67,14 @@ fun SplashContent(
             Row {
                 Icon(
                     imageVector = Icons.Default.FitnessCenter,
-                    contentDescription = "Log Workout",
+                    contentDescription = "Fitness Icon",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp).background(Color.Gray))
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.Default.Fastfood,
-                    contentDescription = "Log Workout",
+                    contentDescription = "Food Icon",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )

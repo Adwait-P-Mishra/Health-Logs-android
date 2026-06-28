@@ -42,7 +42,6 @@ import com.example.viewmodel.SearchViewModel
 import com.example.viewmodel.SettingsViewModel
 import com.example.viewmodel.WorkoutViewModel
 import java.util.*
-import com.example.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
@@ -63,7 +62,7 @@ fun DashboardScreen(
     onEditWorkoutClicked: (ExerciseEntity) -> Unit,
     onNavigateToDailyWorkouts: (Long) -> Unit,
     onNavigateToDailyMeals: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val selectedDate by workoutViewModel.selectedDate.collectAsState()
     val todayWorkouts by workoutViewModel.todayLogs.collectAsState()
@@ -82,13 +81,13 @@ fun DashboardScreen(
     val context = LocalContext.current
 
     val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json")
+        contract = ActivityResultContracts.CreateDocument("application/json"),
     ) { uri ->
         uri?.let { settingsViewModel.exportData(context, it) }
     }
 
     val importLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         uri?.let { settingsViewModel.importData(context, it) }
     }
@@ -165,7 +164,7 @@ fun DashboardContent(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    var showClearConfirm by remember { mutableStateOf(false) }
+    var showClearConfirm by remember { mutableStateOf(value = false) }
 
     if (showClearConfirm) {
         AlertDialog(
@@ -361,6 +360,7 @@ fun DashboardContent(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
+                    .verticalScroll(scrollState)
             ) {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
@@ -397,7 +397,6 @@ fun DashboardContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
                             .background(MaterialTheme.colorScheme.background)
                             .padding(horizontal = 16.dp)
                     ) {
@@ -416,25 +415,20 @@ fun DashboardContent(
                                 )
                             }
                         } else {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(1),
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp)
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                items(searchResults) { result ->
-                                    SearchResultRow(
-                                        result = result,
-                                        onClick = {
-                                            onClearSearch()
-                                            focusManager.clearFocus()
-                                            if (result.kind == SearchKind.EXERCISE) {
-                                                onNavigateToExerciseHistory(result.title)
-                                            } else {
-                                                onNavigateToMealHistory(result.title)
-                                            }
+                                searchResults.forEach { result ->
+                                    SearchResultRow(result) {
+                                        onClearSearch()
+                                        focusManager.clearFocus()
+                                        if (result.kind == SearchKind.EXERCISE) {
+                                            onNavigateToExerciseHistory(result.title)
+                                        } else {
+                                            onNavigateToMealHistory(result.title)
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }
@@ -443,8 +437,6 @@ fun DashboardContent(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(scrollState)
                             .padding(bottom = 16.dp)
                     ) {
                         ExpandableCalendarView(
@@ -457,8 +449,7 @@ fun DashboardContent(
                         WorkoutsSection(
                             todayWorkouts = todayWorkouts,
                             onEditLog = onEditWorkoutClicked,
-                            onHeaderClick = { onNavigateToDailyWorkouts(selectedDate.time) }
-                        )
+                        ) { onNavigateToDailyWorkouts(selectedDate.time) }
 
                         NutritionSection(
                             totalCalories = totalCalories,
@@ -466,8 +457,7 @@ fun DashboardContent(
                             totalCarbs = totalCarbs,
                             totalFat = totalFat,
                             todayMeals = todayMeals,
-                            onHeaderClick = { onNavigateToDailyMeals(selectedDate.time) }
-                        )
+                        ) { onNavigateToDailyMeals(selectedDate.time) }
                     }
                 }
             }
