@@ -85,14 +85,36 @@ class MealViewModel(
         showingSuggestions.value = false
     }
 
-    fun startNewLog() {
+    fun startNewLog(name: String = "") {
         editingLogId.value = null
-        mealName.value = ""
-        calories.value = ""
-        protein.value = ""
-        carbs.value = ""
-        fat.value = ""
-        notes.value = ""
+        mealName.value = name
+        
+        if (name.isNotEmpty()) {
+            val lastLog = allLogs.value
+                .filter { it.mealName.trim().equals(name.trim(), ignoreCase = true) }
+                .maxByOrNull { it.date }
+                
+            if (lastLog != null) {
+                calories.value = lastLog.calories.toString()
+                protein.value = lastLog.protein?.toString() ?: ""
+                carbs.value = lastLog.carbs?.toString() ?: ""
+                fat.value = lastLog.fat?.toString() ?: ""
+                notes.value = lastLog.notes
+            } else {
+                calories.value = ""
+                protein.value = ""
+                carbs.value = ""
+                fat.value = ""
+                notes.value = ""
+            }
+        } else {
+            calories.value = ""
+            protein.value = ""
+            carbs.value = ""
+            fat.value = ""
+            notes.value = ""
+        }
+        
         showingSuggestions.value = false
     }
 

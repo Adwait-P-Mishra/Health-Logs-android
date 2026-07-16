@@ -102,11 +102,27 @@ class WorkoutViewModel(
         showingSuggestions.value = false
     }
 
-    fun startNewLog() {
+    fun startNewLog(name: String = "") {
         editingLogId.value = null
-        exerciseName.value = ""
-        draftSets.value = listOf(WorkoutSet())
-        notes.value = ""
+        exerciseName.value = name
+        
+        if (name.isNotEmpty()) {
+            val lastLog = allLogs.value
+                .filter { it.exerciseName.trim().equals(name.trim(), ignoreCase = true) }
+                .maxByOrNull { it.date }
+            
+            if (lastLog != null) {
+                draftSets.value = lastLog.sets.map { WorkoutSet(weight = it.weight, reps = it.reps) }
+                notes.value = lastLog.notes
+            } else {
+                draftSets.value = listOf(WorkoutSet())
+                notes.value = ""
+            }
+        } else {
+            draftSets.value = listOf(WorkoutSet())
+            notes.value = ""
+        }
+        
         showingSuggestions.value = false
     }
 

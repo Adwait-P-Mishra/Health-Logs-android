@@ -34,6 +34,7 @@ fun ExerciseHistoryScreen(
     onToggleTheme: () -> Unit,
     onBack: () -> Unit,
     onEditTriggered: (ExerciseEntity) -> Unit,
+    onAddLogClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val allLogs by viewModel.allLogs.collectAsState()
@@ -50,6 +51,7 @@ fun ExerciseHistoryScreen(
         onToggleTheme = onToggleTheme,
         onBack = onBack,
         onEditTriggered = onEditTriggered,
+        onAddLogClicked = onAddLogClicked,
         onDeleteLog = { viewModel.deleteLog(it) },
         modifier = modifier
     )
@@ -64,6 +66,7 @@ fun ExerciseHistoryContent(
     onToggleTheme: () -> Unit,
     onBack: () -> Unit,
     onEditTriggered: (ExerciseEntity) -> Unit,
+    onAddLogClicked: () -> Unit,
     onDeleteLog: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,6 +96,11 @@ fun ExerciseHistoryContent(
                     navigationIcon = {
                         IconButton(onClick = onBack, modifier = Modifier.testTag("back_button")) {
                             Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onAddLogClicked) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add log")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -262,6 +270,7 @@ fun ExerciseHistoryPreview() {
             onToggleTheme = {},
             onBack = {},
             onEditTriggered = {},
+            onAddLogClicked = {},
             onDeleteLog = {}
         )
     }

@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ui.theme.MyApplicationTheme
 import com.example.data.MealEntity
 import com.example.util.DateUtils
 import com.example.viewmodel.MealViewModel
@@ -254,7 +257,7 @@ fun DailyMealContent(
 private fun MacroBadge(
     label: String,
     value: String,
-    color: androidx.compose.ui.graphics.Color
+    color: Color
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f)),
@@ -273,6 +276,83 @@ private fun MacroBadge(
                 fontWeight = FontWeight.Bold,
                 color = color
             )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DailyMealPreview() {
+    MyApplicationTheme {
+        val sampleLogs = listOf(
+            MealEntity(
+                mealName = "Oatmeal with Berries",
+                calories = 350,
+                protein = 12.0,
+                carbs = 65.0,
+                fat = 5.0,
+                date = System.currentTimeMillis(),
+                notes = "Added some almond milk"
+            ),
+            MealEntity(
+                mealName = "Grilled Chicken Salad",
+                calories = 450,
+                protein = 40.0,
+                carbs = 10.0,
+                fat = 25.0,
+                date = System.currentTimeMillis()
+            ),
+            MealEntity(
+                mealName = "Greek Yogurt",
+                calories = 150,
+                protein = 15.0,
+                carbs = 8.0,
+                fat = 4.0,
+                date = System.currentTimeMillis()
+            )
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            DailyMealContent(
+                date = Date(),
+                dailyLogs = sampleLogs,
+                isDarkTheme = false,
+                onToggleTheme = {},
+                onBack = {},
+                onEditTriggered = {},
+                onDeleteLog = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DailyMealEmptyPreview() {
+    MyApplicationTheme {
+        DailyMealContent(
+            date = Date(),
+            dailyLogs = emptyList(),
+            isDarkTheme = false,
+            onToggleTheme = {},
+            onBack = {},
+            onEditTriggered = {},
+            onDeleteLog = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MacroBadgePreview() {
+    MyApplicationTheme {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            MacroBadge(label = "Protein", value = "25g", color = MaterialTheme.colorScheme.primary)
+            MacroBadge(label = "Carbs", value = "40g", color = MaterialTheme.colorScheme.tertiary)
+            MacroBadge(label = "Fat", value = "10g", color = MaterialTheme.colorScheme.error)
         }
     }
 }

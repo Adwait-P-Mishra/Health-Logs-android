@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ui.theme.MyApplicationTheme
+import com.example.model.WorkoutSet
 import com.example.data.ExerciseEntity
 import com.example.util.DateUtils
 import com.example.viewmodel.WorkoutViewModel
@@ -232,5 +235,58 @@ fun DailyWorkoutContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DailyWorkoutPreview() {
+    MyApplicationTheme {
+        val sampleLogs = listOf(
+            ExerciseEntity(
+                exerciseName = "Bench Press",
+                sets = listOf(
+                    WorkoutSet(weight = "135", reps = "10"),
+                    WorkoutSet(weight = "155", reps = "8"),
+                    WorkoutSet(weight = "185", reps = "5")
+                ),
+                date = System.currentTimeMillis(),
+                notes = "Feeling strong today"
+            ),
+            ExerciseEntity(
+                exerciseName = "Incline Dumbbell Fly",
+                sets = listOf(
+                    WorkoutSet(weight = "40", reps = "12"),
+                    WorkoutSet(weight = "40", reps = "12")
+                ),
+                date = System.currentTimeMillis()
+            )
+        )
+
+        DailyWorkoutContent(
+            date = Date(),
+            dailyLogs = sampleLogs,
+            isDarkTheme = false,
+            onToggleTheme = {},
+            onBack = {},
+            onEditTriggered = {},
+            onDeleteLog = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DailyWorkoutEmptyPreview() {
+    MyApplicationTheme {
+        DailyWorkoutContent(
+            date = Date(),
+            dailyLogs = emptyList(),
+            isDarkTheme = false,
+            onToggleTheme = {},
+            onBack = {},
+            onEditTriggered = {},
+            onDeleteLog = {}
+        )
     }
 }

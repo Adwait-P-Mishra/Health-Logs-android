@@ -36,6 +36,8 @@ import com.example.model.SearchKind
 import com.example.model.SearchResult
 import com.example.model.WorkoutSet
 import com.example.ui.components.ExpandableCalendarView
+import com.example.ui.components.SearchBar
+import com.example.ui.components.SearchResultsList
 import com.example.util.DateUtils
 import com.example.viewmodel.MealViewModel
 import com.example.viewmodel.SearchViewModel
@@ -62,6 +64,8 @@ fun DashboardScreen(
     onEditWorkoutClicked: (ExerciseEntity) -> Unit,
     onNavigateToDailyWorkouts: (Long) -> Unit,
     onNavigateToDailyMeals: (Long) -> Unit,
+    onLogWorkoutWithTitle: (String) -> Unit,
+    onLogMealWithTitle: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val selectedDate by workoutViewModel.selectedDate.collectAsState()
@@ -123,6 +127,8 @@ fun DashboardScreen(
         onEditWorkoutClicked = onEditWorkoutClicked,
         onNavigateToDailyWorkouts = onNavigateToDailyWorkouts,
         onNavigateToDailyMeals = onNavigateToDailyMeals,
+        onLogWorkoutWithTitle = onLogWorkoutWithTitle,
+        onLogMealWithTitle = onLogMealWithTitle,
         onImportData = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
         onExportData = { exportLauncher.launch("training_nutrition_backup.json") },
         onClearData = { settingsViewModel.clearAllData() },
@@ -155,6 +161,8 @@ fun DashboardContent(
     onEditWorkoutClicked: (ExerciseEntity) -> Unit,
     onNavigateToDailyWorkouts: (Long) -> Unit,
     onNavigateToDailyMeals: (Long) -> Unit,
+    onLogWorkoutWithTitle: (String) -> Unit,
+    onLogMealWithTitle: (String) -> Unit,
     onImportData: () -> Unit,
     onExportData: () -> Unit,
     onClearData: () -> Unit,
@@ -362,77 +370,35 @@ fun DashboardContent(
                     .padding(innerPadding)
                     .verticalScroll(scrollState)
             ) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        placeholder = { Text(placeholderText) },
-                        leadingIcon = {
-                            Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
-                        },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = onClearSearch, modifier = Modifier.testTag("clear_search_button")) {
-                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Clear search")
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(all = 12.dp)
-                            .testTag("search_input"),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                        singleLine = true
-                    )
-                }
+                SearchBar(
+                    query = searchQuery,
+                    onQueryChange = onSearchQueryChange,
+                    placeholder = placeholderText,
+                    onClear = onClearSearch
+                )
 
                 if (searchQuery.trim().length >= 2) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        if (searchResults.isEmpty()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 40.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "No matches found",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                    SearchResultsList(
+                        results = searchResults,
+                        onResultClick = { result ->
+                            onClearSearch()
+                            focusManager.clearFocus()
+                            if (result.kind == SearchKind.EXERCISE) {
+                                onNavigateToExerciseHistory(result.title)
+                            } else {
+                                onNavigateToMealHistory(result.title)
                             }
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                searchResults.forEach { result ->
-                                    SearchResultRow(result) {
-                                        onClearSearch()
-                                        focusManager.clearFocus()
-                                        if (result.kind == SearchKind.EXERCISE) {
-                                            onNavigateToExerciseHistory(result.title)
-                                        } else {
-                                            onNavigateToMealHistory(result.title)
-                                        }
-                                    }
-                                }
+                        },
+                        onAddClick = { result ->
+                            onClearSearch()
+                            focusManager.clearFocus()
+                            if (result.kind == SearchKind.EXERCISE) {
+                                onLogWorkoutWithTitle(result.title)
+                            } else {
+                                onLogMealWithTitle(result.title)
                             }
                         }
-                    }
+                    )
                 } else {
                     Column(
                         modifier = Modifier
@@ -460,66 +426,6 @@ fun DashboardContent(
                         ) { onNavigateToDailyMeals(selectedDate.time) }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun SearchResultRow(
-    result: SearchResult,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .testTag("search_result_item_${result.title.lowercase()}"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    imageVector = if (result.kind == SearchKind.EXERCISE) Icons.Default.FitnessCenter else Icons.Default.Fastfood,
-                    contentDescription = null,
-                    tint = if (result.kind == SearchKind.EXERCISE) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Column {
-                    Text(
-                        text = result.title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (result.kind == SearchKind.EXERCISE) "Exercise" else "Meal",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = "Last: ${DateUtils.formatDate(Date(result.latestDate), "MMM d")}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
-                )
             }
         }
     }
@@ -833,6 +739,8 @@ fun DashboardPreview() {
             onEditWorkoutClicked = {},
             onNavigateToDailyWorkouts = {},
             onNavigateToDailyMeals = {},
+            onLogWorkoutWithTitle = {},
+            onLogMealWithTitle = {},
             onImportData = {},
             onExportData = {},
             onClearData = {}

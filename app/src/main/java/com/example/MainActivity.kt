@@ -132,6 +132,14 @@ fun AppNavigation(
                     },
                     onNavigateToDailyMeals = { dateMillis ->
                         navController.navigate("daily_meals/$dateMillis")
+                    },
+                    onLogWorkoutWithTitle = { title ->
+                        workoutViewModel.startNewLog(title)
+                        showWorkoutEditor = true
+                    },
+                    onLogMealWithTitle = { title ->
+                        mealViewModel.startNewLog(title)
+                        showMealEditor = true
                     }
                 )
 
@@ -176,6 +184,10 @@ fun AppNavigation(
                     onEditTriggered = { entity ->
                         workoutViewModel.startEditLog(entity)
                         showWorkoutEditor = true
+                    },
+                    onAddLogClicked = {
+                        workoutViewModel.startNewLog(exerciseName)
+                        showWorkoutEditor = true
                     }
                 )
 
@@ -207,6 +219,10 @@ fun AppNavigation(
                     onBack = { navController.popBackStack() },
                     onEditTriggered = { entity ->
                         mealViewModel.startEditLog(entity)
+                        showMealEditor = true
+                    },
+                    onAddLogClicked = {
+                        mealViewModel.startNewLog(mealName)
                         showMealEditor = true
                     }
                 )

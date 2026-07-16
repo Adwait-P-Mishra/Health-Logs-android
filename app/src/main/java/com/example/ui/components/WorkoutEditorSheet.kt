@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -101,6 +102,7 @@ fun WorkoutEditorContent(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
     Box(
         modifier = modifier
@@ -311,7 +313,10 @@ fun WorkoutEditorContent(
                             )
 
                             TextButton(
-                                onClick = onAddSet,
+                                onClick = {
+                                    focusManager.clearFocus()
+                                    onAddSet()
+                                },
                                 modifier = Modifier.testTag("add_set_button")
                             ) {
                                 Icon(
@@ -381,7 +386,10 @@ fun WorkoutEditorContent(
                                 )
 
                                 IconButton(
-                                    onClick = { onRemoveSet(set.id) },
+                                    onClick = {
+                                        focusManager.clearFocus()
+                                        onRemoveSet(set.id)
+                                    },
                                     enabled = draftSets.size > 1,
                                     modifier = Modifier.testTag("delete_set_button_$index")
                                 ) {
