@@ -1,0 +1,9 @@
+- [x] Update README.md
+    - [x] Update Title and Header
+    - [x] Fix Screenshot paths
+    - [x] Update Features list (Backup/Restore, Search, History)
+    - [x] Detail Tech Stack (Room, Compose, KSP, etc.)
+    - [x] Add Setup instructions (.env, Gradle)
+    - [x] Update Project Structure section
+- [x] Verify README.md content accuracy
+- [x] Create Walkthrough artifact
