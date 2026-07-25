@@ -1,4 +1,4 @@
-# GymLogs: Training & Nutrition Tracker
+# GymLogs: Gym Logs Tracker
 
 A modern, focused Android application designed to streamline your fitness and nutrition tracking. Built with Kotlin and Jetpack Compose, GymLogs offers a clean, card-based interface for logging workouts and meals while keeping your data local and secure.
 
@@ -66,7 +66,7 @@ A modern, focused Android application designed to streamline your fitness and nu
 ### Setup
 1. **Clone the repo**:
    ```bash
-   git clone https://github.com/your-username/training-nutrition.git
+   git clone https://github.com/Adwait-P-Mishra/Gym-Logs-android
    ```
 2. **Environment Variables**:
    Create a `.env` file in the project root. This project uses the `Secrets Gradle Plugin` to securely handle local properties.

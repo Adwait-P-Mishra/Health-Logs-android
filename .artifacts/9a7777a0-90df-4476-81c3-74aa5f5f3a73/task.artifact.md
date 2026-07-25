@@ -1,9 +1,17 @@
-- [x] Update README.md
-    - [x] Update Title and Header
-    - [x] Fix Screenshot paths
-    - [x] Update Features list (Backup/Restore, Search, History)
-    - [x] Detail Tech Stack (Room, Compose, KSP, etc.)
-    - [x] Add Setup instructions (.env, Gradle)
-    - [x] Update Project Structure section
-- [x] Verify README.md content accuracy
-- [x] Create Walkthrough artifact
+- [x] Cleanup Project Assets and Documentation
+    - [x] Delete `app/src/main/assets/screenshots/` (and accidental nested `app/` folder)
+    - [x] Delete `app/src/main/ic_launcher-playstore.png`
+    - [x] Delete root `assets/` directory
+- [x] Cleanup Testing Infrastructure
+    - [x] Delete `app/src/test/`
+    - [x] Delete `app/src/androidTest/`
+- [x] Modify Build Configurations
+    - [x] Update `app/build.gradle.kts`
+    - [x] Update root `build.gradle.kts`
+    - [x] Update `gradle/libs.versions.toml`
+- [x] Finalize and Verify
+    - [x] Run Gradle Sync
+    - [x] Fix missing `ic_launcher_background` resource
+    - [x] Cleanup redundant XML (backup rules, extraction rules, colors.xml)
+    - [x] Update AndroidManifest.xml
+    - [x] Run `./gradlew assembleDebug`

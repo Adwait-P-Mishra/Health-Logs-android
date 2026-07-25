@@ -123,7 +123,7 @@ fun DashboardScreen(
         onLogWorkoutWithTitle = onLogWorkoutWithTitle,
         onLogMealWithTitle = onLogMealWithTitle,
         onImportData = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
-        onExportData = { exportLauncher.launch("training_nutrition_backup.json") },
+        onExportData = { exportLauncher.launch("gym_logs_backup.json") },
         onClearData = { settingsViewModel.clearAllData() },
         modifier = modifier
     )

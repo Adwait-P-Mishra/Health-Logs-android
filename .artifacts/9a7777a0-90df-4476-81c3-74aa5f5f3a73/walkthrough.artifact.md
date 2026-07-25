@@ -1,28 +1,32 @@
-# Walkthrough - Updated README.md
+# Walkthrough - Non-Crucial Component Removal
 
-I have overhauled the project's [README.md](file:///C:/Users/adwai/Desktop/training-&-nutrition/README.md) to make it more professional, informative, and visually correct for GitHub.
+I have removed all non-essential files, test suites, and configurations while maintaining the full functionality of the application.
 
 ## Changes Made
 
-### 1. Visual Improvements & Fixes
-- **Screenshot Path Correction**: Fixed the broken image links by pointing to the actual location: `app/src/main/app/src/main/assets/screenshots/`.
-- **Table Layout**: Organized screenshots into a cleaner 3x2 grid for better display on mobile and desktop.
+### Project Cleanup
+- **Assets Removal**: Deleted the `assets/` directory, screenshots, and Play Store assets (`ic_launcher-playstore.png`).
+- **Redundant Nested Folders**: Removed an accidental nested `app/` directory found within `app/src/main/`.
+- **Testing Cleanup**: Removed the entire `test/` and `androidTest/` source sets.
 
-### 2. Content Enhancements
-- **Refined Title & Pitch**: Updated the header to reflect the app's focus on modern tech and data privacy.
-- **Detailed Tech Stack**: Listed specific libraries identified in the project:
-    - **Room** for persistence.
-    - **Jetpack Compose (Material 3)** for UI.
-    - **Moshi** for JSON (Backup/Restore).
-    - **Roborazzi** for screenshot testing.
-    - **Secrets Gradle Plugin** for `.env` management.
-- **Feature Highlights**: Added key features discovered in the code, such as **Data Sovereignty (Import/Export)** and **Search/History**.
-
-### 3. Developer Onboarding
-- **Setup Guide**: Added specific instructions for creating a `.env` file and using the correct Android Studio/JDK versions.
-- **Structure Overview**: Provided a high-level map of the `com.adprmi.gymLogs` package structure.
+### Build Configuration Optimization
+- **Plugin Removal**: Removed the `roborazzi` (screenshot testing) and `secrets` plugins.
+- **Dependency Cleanup**:
+    - Removed all commented-out dependencies.
+    - Removed test-related dependencies and Roborazzi libraries.
+    - Removed unused `firebase-bom`.
+    - Cleaned up `libs.versions.toml` to remove all unused versions and library definitions.
+- **Manifest & Resources**:
+    - Removed `backup_rules.xml` and `data_extraction_rules.xml` and their references in `AndroidManifest.xml`.
+    - Deleted redundant `colors.xml` (the app uses hardcoded values in `Color.kt` for its theme).
+    - Fixed a build error by creating a missing `ic_launcher_background.xml` required by the adaptive icon.
 
 ## Verification Results
-- Verified that all tech stack items (Room, Moshi, Roborazzi, etc.) exist in `app/build.gradle.kts`.
-- Verified the package structure matches `app/src/main/java/com/adprmi/gymLogs`.
-- Verified that the screenshot files referenced exist at the specified paths.
+
+### Build Status
+- **Gradle Sync**: Successful.
+- **Assemble Debug**: Successful. The app builds correctly without any errors.
+
+### Functionality Check
+- All core application code (UI, ViewModels, Repository, Database) has been preserved.
+- The `README.md` and `.env` files were kept as requested.

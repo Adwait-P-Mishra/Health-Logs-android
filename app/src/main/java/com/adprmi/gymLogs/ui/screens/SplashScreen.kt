@@ -80,7 +80,7 @@ fun SplashContent(
                 )
             }
             Text(
-                text = "Training & Nutrition",
+                text = "Gym Logs",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
