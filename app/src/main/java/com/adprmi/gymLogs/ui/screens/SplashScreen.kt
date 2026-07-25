@@ -28,7 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun SplashScreen(
     onSplashFinished: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val alphaAnim = remember { Animatable(0f) }
 
@@ -43,14 +43,14 @@ fun SplashScreen(
 
     SplashContent(
         alpha = alphaAnim.value,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
 fun SplashContent(
     alpha: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier

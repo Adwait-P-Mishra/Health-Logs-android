@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adprmi.gymLogs.data.AppRepository
 import com.adprmi.gymLogs.data.ExerciseEntity
-import com.adprmi.gymLogs.data.PreferenceRepository
 import com.adprmi.gymLogs.model.WorkoutSet
 import com.adprmi.gymLogs.util.DateUtils
 import kotlinx.coroutines.flow.*
@@ -12,8 +11,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class WorkoutViewModel(
-    private val repository: AppRepository,
-    prefRepository: PreferenceRepository
+    private val repository: AppRepository
 ) : ViewModel() {
 
     // Global selected date for both workouts and meals
@@ -28,8 +26,6 @@ class WorkoutViewModel(
     val todayLogs: StateFlow<List<ExerciseEntity>> = combine(allLogs, _selectedDate) { logs, date ->
         logs.filter { DateUtils.isSameDay(Date(it.date), date) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val onboardingCompleted: StateFlow<Boolean> = prefRepository.onboardingCompleted
 
     // Form states for creating/editing logs
     var editingLogId = MutableStateFlow<String?>(null)

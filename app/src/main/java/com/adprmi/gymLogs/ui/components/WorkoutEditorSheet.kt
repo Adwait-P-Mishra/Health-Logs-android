@@ -272,7 +272,7 @@ fun WorkoutEditorContent(
                             Spacer(modifier = Modifier.height(6.dp))
                             prevLog.sets.forEachIndexed { index, set ->
                                 Text(
-                                    text = "Set ${index + 1}: ${set.weight} lbs x ${set.reps} reps",
+                                    text = "Set ${index + 1}: ${set.weight} x ${set.reps} reps",
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -354,7 +354,7 @@ fun WorkoutEditorContent(
                                             onUpdateSet(index, filtered, set.reps)
                                         }
                                     },
-                                    label = { Text("Lbs") },
+                                    label = { Text("") },
                                     keyboardOptions = KeyboardOptions(
                                         keyboardType = KeyboardType.Decimal,
                                         imeAction = ImeAction.Next

@@ -16,7 +16,7 @@ class ViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(WorkoutViewModel::class.java) -> {
-                WorkoutViewModel(appRepository, preferenceRepository) as T
+                WorkoutViewModel(appRepository) as T
             }
             modelClass.isAssignableFrom(MealViewModel::class.java) -> {
                 MealViewModel(appRepository) as T

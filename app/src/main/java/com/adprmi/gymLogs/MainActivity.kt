@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     onToggleTheme = {
                         preferenceRepository.setIsDarkMode(!useDarkTheme)
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -66,7 +66,7 @@ fun AppNavigation(
     factory: ViewModelFactory,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
 
@@ -77,13 +77,13 @@ fun AppNavigation(
     val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 
     // Form Overlay States
-    var showWorkoutEditor by remember { mutableStateOf(false) }
-    var showMealEditor by remember { mutableStateOf(false) }
+    var showWorkoutEditor by remember { mutableStateOf(value = false) }
+    var showMealEditor by remember { mutableStateOf(value = false) }
 
     NavHost(
         navController = navController,
         startDestination = "splash",
-        modifier = modifier
+        modifier = modifier,
     ) {
         // 1. Splash Screen
         composable("splash") {
@@ -92,7 +92,7 @@ fun AppNavigation(
                     navController.navigate("dashboard") {
                         popUpTo("splash") { inclusive = true }
                     }
-                }
+                },
             )
         }
 
@@ -137,29 +137,29 @@ fun AppNavigation(
                     onLogMealWithTitle = { title ->
                         mealViewModel.startNewLog(title)
                         showMealEditor = true
-                    }
+                    },
                 )
 
                 // Slide-in/out form animation overlays for pristine polish
                 AnimatedVisibility(
                     visible = showWorkoutEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     WorkoutEditorSheet(
                         viewModel = workoutViewModel,
-                        onDismiss = { showWorkoutEditor = false }
+                        onDismiss = { showWorkoutEditor = false },
                     )
                 }
 
                 AnimatedVisibility(
                     visible = showMealEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     MealEditorSheet(
                         viewModel = mealViewModel,
-                        onDismiss = { showMealEditor = false }
+                        onDismiss = { showMealEditor = false },
                     )
                 }
             }
@@ -168,7 +168,7 @@ fun AppNavigation(
         // 3. Exercise History Screen
         composable(
             route = "exercise_history/{exerciseName}",
-            arguments = listOf(navArgument("exerciseName") { type = NavType.StringType })
+            arguments = listOf(navArgument("exerciseName") { type = NavType.StringType }),
         ) { backStackEntry ->
             val exerciseName = backStackEntry.arguments?.getString("exerciseName") ?: ""
             Box(modifier = Modifier.fillMaxSize()) {
@@ -185,17 +185,17 @@ fun AppNavigation(
                     onAddLogClicked = {
                         workoutViewModel.startNewLog(exerciseName)
                         showWorkoutEditor = true
-                    }
+                    },
                 )
 
                 AnimatedVisibility(
                     visible = showWorkoutEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     WorkoutEditorSheet(
                         viewModel = workoutViewModel,
-                        onDismiss = { showWorkoutEditor = false }
+                        onDismiss = { showWorkoutEditor = false },
                     )
                 }
             }
@@ -204,7 +204,7 @@ fun AppNavigation(
         // 5. Meal History Screen
         composable(
             route = "meal_history/{mealName}",
-            arguments = listOf(navArgument("mealName") { type = NavType.StringType })
+            arguments = listOf(navArgument("mealName") { type = NavType.StringType }),
         ) { backStackEntry ->
             val mealName = backStackEntry.arguments?.getString("mealName") ?: ""
             Box(modifier = Modifier.fillMaxSize()) {
@@ -221,17 +221,17 @@ fun AppNavigation(
                     onAddLogClicked = {
                         mealViewModel.startNewLog(mealName)
                         showMealEditor = true
-                    }
+                    },
                 )
 
                 AnimatedVisibility(
                     visible = showMealEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     MealEditorSheet(
                         viewModel = mealViewModel,
-                        onDismiss = { showMealEditor = false }
+                        onDismiss = { showMealEditor = false },
                     )
                 }
             }
@@ -240,7 +240,7 @@ fun AppNavigation(
         // 6. Daily Workouts Screen
         composable(
             route = "daily_workouts/{dateMillis}",
-            arguments = listOf(navArgument("dateMillis") { type = NavType.LongType })
+            arguments = listOf(navArgument("dateMillis") { type = NavType.LongType }),
         ) { backStackEntry ->
             val dateMillis = backStackEntry.arguments?.getLong("dateMillis") ?: 0L
             Box(modifier = Modifier.fillMaxSize()) {
@@ -253,17 +253,17 @@ fun AppNavigation(
                     onEditTriggered = { entity ->
                         workoutViewModel.startEditLog(entity)
                         showWorkoutEditor = true
-                    }
+                    },
                 )
 
                 AnimatedVisibility(
                     visible = showWorkoutEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     WorkoutEditorSheet(
                         viewModel = workoutViewModel,
-                        onDismiss = { showWorkoutEditor = false }
+                        onDismiss = { showWorkoutEditor = false },
                     )
                 }
             }
@@ -272,7 +272,7 @@ fun AppNavigation(
         // 7. Daily Meals Screen
         composable(
             route = "daily_meals/{dateMillis}",
-            arguments = listOf(navArgument("dateMillis") { type = NavType.LongType })
+            arguments = listOf(navArgument("dateMillis") { type = NavType.LongType }),
         ) { backStackEntry ->
             val dateMillis = backStackEntry.arguments?.getLong("dateMillis") ?: 0L
             Box(modifier = Modifier.fillMaxSize()) {
@@ -285,17 +285,17 @@ fun AppNavigation(
                     onEditTriggered = { entity ->
                         mealViewModel.startEditLog(entity)
                         showMealEditor = true
-                    }
+                    },
                 )
 
                 AnimatedVisibility(
                     visible = showMealEditor,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
                 ) {
                     MealEditorSheet(
                         viewModel = mealViewModel,
-                        onDismiss = { showMealEditor = false }
+                        onDismiss = { showMealEditor = false },
                     )
                 }
             }

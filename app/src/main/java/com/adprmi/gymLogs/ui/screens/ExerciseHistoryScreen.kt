@@ -215,7 +215,7 @@ fun ExerciseHistoryContent(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "${set.weight} lbs  x  ${set.reps} reps",
+                                        text = "${set.weight}  x  ${set.reps} reps",
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
