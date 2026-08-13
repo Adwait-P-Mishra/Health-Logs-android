@@ -1,6 +1,6 @@
-# GymLogs: Gym Logs Tracker
+# HealthLogs: Health Logs Tracker
 
-A modern, focused Android application designed to streamline your fitness and nutrition tracking. Built with Kotlin and Jetpack Compose, GymLogs offers a clean, card-based interface for logging workouts and meals while keeping your data local and secure.
+A modern, focused Android application designed to streamline your fitness and nutrition tracking. Built with Kotlin and Jetpack Compose, HealthLogs offers a clean, card-based interface for logging workouts and meals while keeping your data local and secure.
 
 ---
 
@@ -81,7 +81,7 @@ A modern, focused Android application designed to streamline your fitness and nu
 
 ## Project Structure
 
-The project follows a feature-oriented package structure within `com.adprmi.gymLogs`:
+The project follows a feature-oriented package structure within `com.adprmi.healthLogs`:
 
 - `ui/`: Contains Compose screens (`screens/`), reusable components (`components/`), and themes.
 - `data/`: Room entities, DAOs, and the `AppRepository` for data orchestration.

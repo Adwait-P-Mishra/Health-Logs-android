@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-  namespace = "com.adprmi.gymLogs"
+  namespace = "com.adprmi.healthLogs"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.adprmi.gymLogs"
+    applicationId = "com.adprmi.healthLogs"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
