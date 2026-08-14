@@ -34,12 +34,12 @@ A modern, focused Android application designed to streamline your fitness and nu
 ## Screenshots
 
 ### Light Mode
-| | | | | | |
+| Dashboard | Workout Editor | Meal Editor | Daily Workouts | Daily Meals | Settings |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | <img src="app/src/main/app/src/main/assets/screenshots/1.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/2.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/3.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/4.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/5.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/6.jpg" width="220" /> |
 
 ### Dark Mode
-| | | | | | |
+| Dashboard | Workout Editor | Meal Editor | Daily Workouts | Daily Meals | Settings |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | <img src="app/src/main/app/src/main/assets/screenshots/1_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/2_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/3_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/4_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/5_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/6_dark.jpg" width="220" /> |
 
