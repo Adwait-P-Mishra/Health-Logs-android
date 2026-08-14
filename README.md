@@ -19,23 +19,39 @@ A modern, focused Android application designed to streamline your fitness and nu
 
 - **Workout Logging**: Track exercises, sets, weight, and reps with ease.
 - **Nutrition Tracking**: Log meals with calories and optional macros (protein, carbs, fat).
-- **Dashboard Summary**: Get a quick overview of your daily nutrition totals and recent activity.
-- **Search & History**: Deep-dive into your past exercise sets or meal details.
+- **BYOK AI Integration**: "Bring Your Own Key" AI support for OpenAI, Gemini, Groq, and local endpoints (Ollama/LM Studio). Use AI to estimate meal calories or workout burn.
+- **AI Transparency**: View the exact prompt and logical assumptions the AI used for every estimation through the **AI Details** bottom sheet.
+- **Smart Weight Tracking**: Log your weight daily with a "one entry per day" constraint. Auto-populates from your last entry to reduce friction.
+- **Weight Trends**: Tasteful trend charts with X and Y axis labels to visualize your progress over time.
+- **Personalized Profiles**: Set your height (cm or ft/in) and gender to provide the AI with more context for accurate physiological estimations.
 - **Data Sovereignty**: Import/Export your entire database via JSON files. Your data stays with you.
+- **Secure Storage**: API keys are stored securely on-device using the Android Keystore system.
 - **Adaptive UI**: Full support for Light and Dark modes using Material 3.
-- **Date Navigation**: Use the built-in date picker to review or log data for any day.
+- **Date Navigation**: Use the built-in calendar to review or log data for any day in your fitness journey.
 
 ---
 
 ## Screenshots
 
-| Dashboard | Add Meal | Add Exercise |
-| :---: | :---: | :---: |
-| <img src="app/src/main/app/src/main/assets/screenshots/05_dashboard.jpeg" width="200" /> | <img src="app/src/main/app/src/main/assets/screenshots/01_add_meal.jpg" width="200" /> | <img src="app/src/main/app/src/main/assets/screenshots/02_add_exercise.jpeg" width="200" /> |
+### Light Mode
+<div style="display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px;">
+  <img src="app/src/main/app/src/main/assets/screenshots/1.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/2.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/3.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/4.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/5.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/6.jpg" width="200" />
+</div>
 
-| Meals | Workouts | History |
-| :---: | :---: | :---: |
-| <img src="app/src/main/app/src/main/assets/screenshots/03_meals_view.jpeg" width="200" /> | <img src="app/src/main/app/src/main/assets/screenshots/04_workouts_view.jpeg" width="200" /> | <img src="app/src/main/app/src/main/assets/screenshots/06_meal_history.jpeg" width="200" /> |
+### Dark Mode
+<div style="display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px;">
+  <img src="app/src/main/app/src/main/assets/screenshots/1_dark.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/2_dark.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/3_dark.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/4_dark.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/5_dark.jpg" width="200" />
+  <img src="app/src/main/app/src/main/assets/screenshots/6_dark.jpg" width="200" />
+</div>
 
 ---
 
@@ -44,9 +60,10 @@ A modern, focused Android application designed to streamline your fitness and nu
 - **Language**: [Kotlin](https://kotlinlang.org/)
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3)
 - **Database**: [Room](https://developer.android.com/training/data-storage/room)
+- **Security**: [EncryptedSharedPreferences](https://developer.android.com/topic/security/data) & Android Keystore
 - **JSON Serialization**: [Moshi](https://github.com/square/moshi)
 - **Networking**: [Retrofit](https://square.github.io/retrofit/) & OkHttp
-- **Dependency Injection**: Manual injection via `ViewModelFactory` (Hilt-ready structure)
+- **Dependency Injection**: Manual injection via `ViewModelFactory`
 - **Asynchronous Work**: [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) & Flow
 - **Testing**:
     - [Roborazzi](https://github.com/takahirom/roborazzi) for screenshot testing.
@@ -84,7 +101,7 @@ A modern, focused Android application designed to streamline your fitness and nu
 The project follows a feature-oriented package structure within `com.adprmi.healthLogs`:
 
 - `ui/`: Contains Compose screens (`screens/`), reusable components (`components/`), and themes.
-- `data/`: Room entities, DAOs, and the `AppRepository` for data orchestration.
+- `data/`: Room entities, DAOs, and repositories for data orchestration.
 - `viewmodel/`: State holders for UI components using `ViewModel` and `Flow`.
 - `model/`: Domain data models and data transfer objects (DTOs).
 - `util/`: Helper classes for dates and formatting.
