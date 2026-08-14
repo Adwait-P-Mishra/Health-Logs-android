@@ -1,5 +1,6 @@
 package com.adprmi.healthLogs.ui.components
 
+import android.graphics.drawable.shapes.RoundRectShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.adprmi.healthLogs.model.SearchKind
 import com.adprmi.healthLogs.model.SearchResult
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.util.DateUtils
 import java.util.*
 
@@ -39,10 +41,13 @@ fun SearchBar(
 ) {
     val focusManager = LocalFocusManager.current
     Surface(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = CircleShape,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shadowElevation = 2.dp
     ) {
         OutlinedTextField(
             value = query,
@@ -195,7 +200,7 @@ fun SearchResultRow(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun SearchBarPreview() {
     MyApplicationTheme {
@@ -206,7 +211,7 @@ fun SearchBarPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun SearchResultRowPreview() {
     MyApplicationTheme {
@@ -225,7 +230,7 @@ fun SearchResultRowPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun SearchResultsListPreview() {
     MyApplicationTheme {

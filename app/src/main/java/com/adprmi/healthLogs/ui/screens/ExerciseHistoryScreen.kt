@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.model.WorkoutSet
 import com.adprmi.healthLogs.util.DateUtils
@@ -136,14 +137,19 @@ fun ExerciseHistoryContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPadding)
-                    .padding(12.dp),
+                    .consumeWindowInsets(innerPadding),
+                contentPadding = PaddingValues(
+                    start = 16.dp + innerPadding.calculateStartPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    top = 16.dp + innerPadding.calculateTopPadding(),
+                    end = 16.dp + innerPadding.calculateEndPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    bottom = 16.dp + innerPadding.calculateBottomPadding()
+                ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(exerciseLogs) { log ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
@@ -219,7 +225,7 @@ fun ExerciseHistoryContent(
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Spacer(Modifier.width(4.dp))
-                                        Text("lbs", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text(set.unit.displayName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
 
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -259,7 +265,7 @@ fun ExerciseHistoryContent(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun ExerciseHistoryPreview() {
     MyApplicationTheme {

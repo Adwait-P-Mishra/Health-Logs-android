@@ -17,11 +17,13 @@ import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.model.SearchKind
 import com.adprmi.healthLogs.model.SearchResult
+import com.adprmi.healthLogs.model.WeightUnit
 import com.adprmi.healthLogs.ui.components.AddButtonsRow
 import com.adprmi.healthLogs.ui.components.ExpandableCalendarView
 import com.adprmi.healthLogs.ui.components.SearchBar
 import com.adprmi.healthLogs.ui.components.SearchResultsList
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +33,8 @@ fun DashboardContent(
     onDateSelected: (Date) -> Unit,
     todayWorkouts: List<ExerciseEntity>,
     todayMeals: List<MealEntity>,
+    userWeightKg: Double?,
+    weightUnit: WeightUnit,
     totalCalories: Int,
     targetCalories: Int?,
     totalProtein: Double,
@@ -51,6 +55,8 @@ fun DashboardContent(
     onLogWorkoutWithTitle: (String) -> Unit,
     onLogMealWithTitle: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onSetUserWeightKg: (Double) -> Unit,
+    onNavigateToWeightTrend: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -88,13 +94,15 @@ fun DashboardContent(
                 )
             }
         },
-        modifier = modifier.testTag("dashboard_screen")
+        modifier = modifier.testTag("dashboard_screen"),
+        contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
                 .verticalScroll(scrollState)
         ) {
             SearchBar(
@@ -136,7 +144,6 @@ fun DashboardContent(
                         selectedDate = selectedDate,
                         onDateSelected = onDateSelected,
                         modifier = Modifier
-                            .padding(horizontal = 8.dp)
                     )
 
                     AddButtonsRow(
@@ -146,8 +153,12 @@ fun DashboardContent(
 
                     WorkoutsSection(
                         todayWorkouts = todayWorkouts,
+                        userWeightKg = userWeightKg,
+                        weightUnit = weightUnit,
                         onEditLog = onEditWorkoutClicked,
-                        onLogWorkoutClicked = onLogWorkoutClicked
+                        onLogWorkoutClicked = onLogWorkoutClicked,
+                        onSetUserWeightKg = onSetUserWeightKg,
+                        onWeightTrendClick = onNavigateToWeightTrend
                     ) { onNavigateToDailyWorkouts(selectedDate.time) }
 
                     NutritionSection(
@@ -165,7 +176,7 @@ fun DashboardContent(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun DashboardPreview() {
     MyApplicationTheme {
@@ -174,6 +185,8 @@ fun DashboardPreview() {
             onDateSelected = {},
             todayWorkouts = emptyList(),
             todayMeals = emptyList(),
+            userWeightKg = null,
+            weightUnit = WeightUnit.KG,
             totalCalories = 600,
             targetCalories = null,
             totalProtein = 30.0,
@@ -193,7 +206,9 @@ fun DashboardPreview() {
             onNavigateToDailyMeals = {},
             onLogWorkoutWithTitle = {},
             onLogMealWithTitle = {},
-            onNavigateToSettings = {}
+            onNavigateToSettings = {},
+            onSetUserWeightKg = {},
+            onNavigateToWeightTrend = {}
         )
     }
 }

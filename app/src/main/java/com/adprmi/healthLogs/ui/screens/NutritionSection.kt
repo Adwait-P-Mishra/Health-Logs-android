@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -58,15 +59,20 @@ fun NutritionSection(
     val formattedTarget = targetCalories?.let { calorieFormatter.format(it) }
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
             .clickable { onHeaderClick() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,10 +110,12 @@ fun NutritionSection(
                     }
                 }
             }
-
+            // Nutrition Tracker Content
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
@@ -226,7 +234,7 @@ fun NutritionSection(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun NutritionSectionPreview() {
     MyApplicationTheme {

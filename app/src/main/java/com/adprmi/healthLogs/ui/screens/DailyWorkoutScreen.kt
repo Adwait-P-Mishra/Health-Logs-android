@@ -1,6 +1,7 @@
 package com.adprmi.healthLogs.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,9 +17,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.model.WorkoutSet
+import com.adprmi.healthLogs.model.WeightUnit
 import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.WorkoutViewModel
@@ -30,22 +32,36 @@ fun DailyWorkoutScreen(
     viewModel: WorkoutViewModel,
     onBack: () -> Unit,
     onEditTriggered: (ExerciseEntity) -> Unit,
+    onNavigateToWeightTrend: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val allLogs by viewModel.allLogs.collectAsState()
+    val allWeights by viewModel.allWeights.collectAsState()
     val targetDate = Date(dateMillis)
+    val weightUnit by viewModel.weightUnit.collectAsState()
 
     val dailyLogs = remember(allLogs, dateMillis) {
         allLogs.filter { DateUtils.isSameDay(Date(it.date), targetDate) }
             .sortedByDescending { it.date }
     }
+    
+    val weightForDay = remember(allWeights, dateMillis) {
+        // Find weight for the target date, or the most recent one before it
+        val endOfDay = DateUtils.getEndOfDay(targetDate).time
+        allWeights.filter { it.date <= endOfDay }
+            .maxByOrNull { it.date }
+    }
 
     DailyWorkoutContent(
         date = targetDate,
         dailyLogs = dailyLogs,
+        userWeightKg = weightForDay?.weightKg,
+        weightUnit = weightUnit,
         onBack = onBack,
         onEditTriggered = onEditTriggered,
         onDeleteLog = { viewModel.deleteLog(it) },
+        onSetUserWeightKg = { viewModel.setUserWeightKg(it, targetDate) },
+        onWeightTrendClick = onNavigateToWeightTrend,
         modifier = modifier
     )
 }
@@ -55,11 +71,52 @@ fun DailyWorkoutScreen(
 fun DailyWorkoutContent(
     date: Date,
     dailyLogs: List<ExerciseEntity>,
+    userWeightKg: Double?,
+    weightUnit: WeightUnit,
     onBack: () -> Unit,
     onEditTriggered: (ExerciseEntity) -> Unit,
     onDeleteLog: (String) -> Unit,
+    onSetUserWeightKg: (Double) -> Unit,
+    onWeightTrendClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showUserWeightDialog by remember { mutableStateOf(false) }
+
+    if (showUserWeightDialog) {
+        var tempWeight by remember { mutableStateOf(userWeightKg?.toString() ?: "") }
+        AlertDialog(
+            onDismissRequest = { showUserWeightDialog = false },
+            title = { Text("Update Current Weight") },
+            text = {
+                OutlinedTextField(
+                    value = tempWeight,
+                    onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) tempWeight = it },
+                    label = { Text("Weight in ${weightUnit.displayName}") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val newWeight = tempWeight.toDoubleOrNull()
+                        if (newWeight != null) {
+                            onSetUserWeightKg(newWeight)
+                        }
+                        showUserWeightDialog = false
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUserWeightDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -96,45 +153,147 @@ fun DailyWorkoutContent(
         },
         modifier = modifier.testTag("daily_workout_screen")
     ) { innerPadding ->
-        if (dailyLogs.isEmpty()) {
-            Box(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(innerPadding)
+        ) {
+            // Daily Weight Update Section
+            // User Weight Card
+            Surface(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp)
+                    .clickable { onWeightTrendClick() },
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.FitnessCenter,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "No workouts logged for this day",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MonitorWeight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(38.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "Current Weight",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Text(
+                                text = userWeightKg?.let { "$it ${weightUnit.displayName}" } ?: "Not Available",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                    IconButton(onClick = { showUserWeightDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit weight",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPadding)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(dailyLogs) { log ->
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp),
+//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+//                shape = RoundedCornerShape(12.dp)
+//            ) {
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clickable { onWeightTrendClick() }
+//                        .padding(16.dp),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Row(
+//                        modifier = Modifier.weight(1f),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.MonitorWeight,
+//                            contentDescription = null,
+//                            tint = MaterialTheme.colorScheme.secondary
+//                        )
+//                        Spacer(Modifier.width(12.dp))
+//                        Column {
+//                            Text(
+//                                text = "Current Weight",
+//                                style = MaterialTheme.typography.labelMedium,
+//                                color = MaterialTheme.colorScheme.onSecondaryContainer
+//                            )
+//                            Text(
+//                                text = "$userWeightKg ${weightUnit.displayName}",
+//                                style = MaterialTheme.typography.titleMedium,
+//                                fontWeight = FontWeight.Bold,
+//                                color = MaterialTheme.colorScheme.onSecondaryContainer
+//                            )
+//                        }
+//                    }
+//                    Text(
+//                        text = "Update",
+//                        style = MaterialTheme.typography.labelLarge,
+//                        color = MaterialTheme.colorScheme.secondary,
+//                        fontWeight = FontWeight.Bold,
+//                        modifier = Modifier
+//                            .clickable { showUserWeightDialog = true }
+//                            .padding(8.dp)
+//                    )
+//                }
+//            }
+
+            if (dailyLogs.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "No workouts logged for this day",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(dailyLogs) { log ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
@@ -212,7 +371,7 @@ fun DailyWorkoutContent(
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Spacer(Modifier.width(4.dp))
-                                        Text("lbs", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text(set.unit.displayName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
 
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -251,8 +410,9 @@ fun DailyWorkoutContent(
         }
     }
 }
+}
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun DailyWorkoutPreview() {
     MyApplicationTheme {
@@ -280,23 +440,31 @@ fun DailyWorkoutPreview() {
         DailyWorkoutContent(
             date = Date(),
             dailyLogs = sampleLogs,
+            userWeightKg = 75.0,
+            weightUnit = WeightUnit.KG,
             onBack = {},
             onEditTriggered = {},
-            onDeleteLog = {}
+            onDeleteLog = {},
+            onSetUserWeightKg = {},
+            onWeightTrendClick = {}
         )
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun DailyWorkoutEmptyPreview() {
     MyApplicationTheme {
         DailyWorkoutContent(
             date = Date(),
             dailyLogs = emptyList(),
+            userWeightKg = null,
+            weightUnit = WeightUnit.KG,
             onBack = {},
             onEditTriggered = {},
-            onDeleteLog = {}
+            onDeleteLog = {},
+            onSetUserWeightKg = {},
+            onWeightTrendClick = {}
         )
     }
 }

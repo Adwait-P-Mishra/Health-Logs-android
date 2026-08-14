@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 
 @Composable
 fun MacroProgressBar(label: String, value: Double, target: Double, color: Color) {
@@ -37,7 +38,7 @@ fun MacroProgressBar(label: String, value: Double, target: Double, color: Color)
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun MacroProgressBarPreview() {
     MyApplicationTheme {

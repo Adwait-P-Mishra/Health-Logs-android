@@ -1,0 +1,110 @@
+{
+  "exercises": [
+    {
+      "id": "e1a1-1111",
+      "date": 1786608000000,
+      "exerciseName": "Bench Press",
+      "sets": [
+        { "id": "s1", "weight": "60", "reps": "10", "unit": "KG" },
+        { "id": "s2", "weight": "60", "reps": "8", "unit": "KG" },
+        { "id": "s3", "weight": "55", "reps": "10", "unit": "KG" }
+      ],
+      "notes": "Felt strong today",
+      "caloriesBurned": 250
+    },
+    {
+      "id": "e2b2-2222",
+      "date": 1786780800000,
+      "exerciseName": "Squats",
+      "sets": [
+        { "id": "s4", "weight": "80", "reps": "12", "unit": "KG" },
+        { "id": "s5", "weight": "85", "reps": "10", "unit": "KG" },
+        { "id": "s6", "weight": "90", "reps": "8", "unit": "KG" },
+        { "id": "s7", "weight": "90", "reps": "8", "unit": "KG" }
+      ],
+      "notes": "Focus on depth",
+      "caloriesBurned": 350
+    },
+    {
+      "id": "e3c3-3333",
+      "date": 1786784400000,
+      "exerciseName": "Deadlift",
+      "sets": [
+        { "id": "s8", "weight": "100", "reps": "5", "unit": "KG" },
+        { "id": "s9", "weight": "110", "reps": "5", "unit": "KG" },
+        { "id": "s10", "weight": "120", "reps": "3", "unit": "KG" }
+      ],
+      "notes": "PR attempt next time",
+      "caloriesBurned": 300
+    }
+  ],
+  "meals": [
+    {
+      "id": "m1a1-1111",
+      "date": 1786611600000,
+      "mealName": "Oatmeal with Berries",
+      "calories": 400,
+      "protein": 15.0,
+      "carbs": 60.0,
+      "fat": 8.0,
+      "notes": "Post-workout"
+    },
+    {
+      "id": "m2b2-2222",
+      "date": 1786644000000,
+      "mealName": "Grilled Chicken Salad",
+      "calories": 600,
+      "protein": 45.0,
+      "carbs": 20.0,
+      "fat": 35.0,
+      "notes": "Light dressing"
+    },
+    {
+      "id": "m3c3-3333",
+      "date": 1786698000000,
+      "mealName": "Turkey Sandwich",
+      "calories": 500,
+      "protein": 30.0,
+      "carbs": 50.0,
+      "fat": 15.0,
+      "notes": "Whole wheat bread"
+    },
+    {
+      "id": "m4d4-4444",
+      "date": 1786734000000,
+      "mealName": "Salmon and Quinoa",
+      "calories": 700,
+      "protein": 40.0,
+      "carbs": 45.0,
+      "fat": 25.0,
+      "notes": "Extra veggies"
+    },
+    {
+      "id": "m5e5-5555",
+      "date": 1786788000000,
+      "mealName": "Scrambled Eggs and Toast",
+      "calories": 450,
+      "protein": 25.0,
+      "carbs": 30.0,
+      "fat": 20.0,
+      "notes": "3 eggs"
+    }
+  ],
+  "weights": [
+    {
+      "id": "w1a1-1111",
+      "date": 1786608000000,
+      "weightKg": 75.5
+    },
+    {
+      "id": "w2b2-2222",
+      "date": 1786694400000,
+      "weightKg": 75.2
+    },
+    {
+      "id": "w3c3-3333",
+      "date": 1786780800000,
+      "weightKg": 75.0
+    }
+  ]
+}

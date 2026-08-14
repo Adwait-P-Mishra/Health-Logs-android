@@ -22,14 +22,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
+import com.adprmi.healthLogs.model.CalorieUiState
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.model.WorkoutSet
+import com.adprmi.healthLogs.model.WeightUnit
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.WorkoutViewModel
 import java.util.*
@@ -42,12 +46,27 @@ fun WorkoutEditorSheet(
 ) {
     val exerciseName by viewModel.exerciseName.collectAsState()
     val draftSets by viewModel.draftSets.collectAsState()
+    val caloriesBurned by viewModel.caloriesBurned.collectAsState()
     val notes by viewModel.notes.collectAsState()
     val showingSuggestions by viewModel.showingSuggestions.collectAsState()
     val suggestions by viewModel.exerciseSuggestions.collectAsState()
     val lastMatchingLog by viewModel.lastMatchingLog.collectAsState()
     val canSave by viewModel.canSaveLog.collectAsState()
     val editingId by viewModel.editingLogId.collectAsState()
+    val weightUnit by viewModel.weightUnit.collectAsState()
+    val calorieUiState by viewModel.calorieUiState.collectAsState()
+
+    var showAssumptionsSheet by remember { mutableStateOf(false) }
+    var assumptions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var currentPrompt by remember { mutableStateOf("") }
+
+    if (showAssumptionsSheet) {
+        AiAssumptionsSheet(
+            assumptions = assumptions,
+            prompt = currentPrompt,
+            onDismiss = { showAssumptionsSheet = false }
+        )
+    }
 
     BackHandler {
         onDismiss()
@@ -63,6 +82,16 @@ fun WorkoutEditorSheet(
         onUpdateSet = { index, weight, reps -> viewModel.updateSet(index, weight, reps) },
         onAddSet = { viewModel.addSetCopyingPrevious() },
         onRemoveSet = { id -> viewModel.removeSet(id) },
+        caloriesBurned = caloriesBurned,
+        onCaloriesBurnedChange = { viewModel.caloriesBurned.value = it.filter { it.isDigit() } },
+        calorieUiState = calorieUiState,
+        onEstimateCalorieBurn = { viewModel.estimateCalorieBurn() },
+        onResetCalorieUiState = { viewModel.resetCalorieUiState() },
+        onShowAssumptions = { list, prompt ->
+            assumptions = list
+            currentPrompt = prompt
+            showAssumptionsSheet = true
+        },
         notes = notes,
         onNotesChange = { viewModel.notes.value = it },
         showingSuggestions = showingSuggestions,
@@ -71,6 +100,7 @@ fun WorkoutEditorSheet(
         lastMatchingLog = lastMatchingLog,
         canSave = canSave,
         editingId = editingId,
+        weightUnit = weightUnit,
         onSave = {
             viewModel.saveCurrentLog()
             onDismiss()
@@ -89,6 +119,12 @@ fun WorkoutEditorContent(
     onUpdateSet: (Int, String, String) -> Unit,
     onAddSet: () -> Unit,
     onRemoveSet: (String) -> Unit,
+    caloriesBurned: String,
+    onCaloriesBurnedChange: (String) -> Unit,
+    calorieUiState: CalorieUiState,
+    onEstimateCalorieBurn: () -> Unit,
+    onResetCalorieUiState: () -> Unit,
+    onShowAssumptions: (List<String>, String) -> Unit,
     notes: String,
     onNotesChange: (String) -> Unit,
     showingSuggestions: Boolean,
@@ -97,6 +133,7 @@ fun WorkoutEditorContent(
     lastMatchingLog: ExerciseEntity?,
     canSave: Boolean,
     editingId: String?,
+    weightUnit: WeightUnit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
@@ -108,6 +145,7 @@ fun WorkoutEditorContent(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
             .testTag("workout_editor_sheet")
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -149,19 +187,18 @@ fun WorkoutEditorContent(
                     .fillMaxSize()
                     .weight(1f)
                     .verticalScroll(scrollState)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(horizontal = 16.dp),
             ) {
                 // Exercise Name Text field
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
                         Text(
                             text = "EXERCISE NAME",
                             style = MaterialTheme.typography.labelMedium,
@@ -241,9 +278,9 @@ fun WorkoutEditorContent(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(12.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -273,7 +310,7 @@ fun WorkoutEditorContent(
                                         color = MaterialTheme.colorScheme.outline
                                     )
                                     Text(
-                                        text = "${set.weight} lbs x ${set.reps}",
+                                        text = "${set.weight} ${set.unit.displayName} x ${set.reps}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -296,17 +333,23 @@ fun WorkoutEditorContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "CURRENT SESSION",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "CURRENT SESSION",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -316,7 +359,7 @@ fun WorkoutEditorContent(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text("Set", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.width(48.dp))
-                            Text("Lbs", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                            Text(weightUnit.displayName.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                             Text("Reps", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                             Spacer(Modifier.width(48.dp))
                         }
@@ -409,6 +452,27 @@ fun WorkoutEditorContent(
                             Spacer(Modifier.width(8.dp))
                             Text("Add Set", style = MaterialTheme.typography.bodyLarge)
                         }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            OutlinedTextField(
+                                value = caloriesBurned,
+                                onValueChange = onCaloriesBurnedChange,
+                                label = { Text("Est. Burned Calories") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("kcal", color = MaterialTheme.colorScheme.outline)
+                            Spacer(Modifier.width(8.dp))
+                            AiEstimateButton(
+                                uiState = calorieUiState,
+                                onClick = onEstimateCalorieBurn,
+                                onDismissError = onResetCalorieUiState,
+                                onShowAssumptions = onShowAssumptions
+                            )
+                        }
                     }
                 }
 
@@ -416,12 +480,12 @@ fun WorkoutEditorContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
                         Text(
                             text = "NOTES",
                             style = MaterialTheme.typography.labelMedium,
@@ -445,14 +509,17 @@ fun WorkoutEditorContent(
                         )
                     }
                 }
-                Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(120.dp))
             }
         }
 
         // Sticky Bottom Save Button
         Surface(
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-            color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .navigationBarsPadding(),
+            color = MaterialTheme.colorScheme.background,
             shadowElevation = 8.dp
         ) {
             Button(
@@ -478,7 +545,7 @@ fun WorkoutEditorContent(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun WorkoutEditorPreview() {
     MyApplicationTheme {
@@ -506,6 +573,13 @@ fun WorkoutEditorPreview() {
             ),
             canSave = true,
             editingId = null,
+            weightUnit = WeightUnit.KG,
+            caloriesBurned = "",
+            onCaloriesBurnedChange = {},
+            calorieUiState = CalorieUiState.Idle,
+            onEstimateCalorieBurn = {},
+            onResetCalorieUiState = {},
+            onShowAssumptions = { _, _ -> },
             onSave = {},
             onDismiss = {}
         )

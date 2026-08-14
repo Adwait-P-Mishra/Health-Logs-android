@@ -3,19 +3,27 @@ package com.adprmi.healthLogs.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adprmi.healthLogs.data.AppRepository
+import com.adprmi.healthLogs.data.CalorieRepository
 import com.adprmi.healthLogs.data.MealEntity
+import com.adprmi.healthLogs.data.PreferenceRepository
+import com.adprmi.healthLogs.model.CalorieUiState
 import com.adprmi.healthLogs.util.DateUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 
 class MealViewModel(
-    private val repository: AppRepository
+    private val repository: AppRepository,
+    private val preferenceRepository: PreferenceRepository,
+    private val calorieRepository: CalorieRepository
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(Date())
 
     val allLogs: StateFlow<List<MealEntity>> = repository.allMealsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allWeights: StateFlow<List<com.adprmi.healthLogs.data.WeightEntity>> = repository.allWeightsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val todayLogs: StateFlow<List<MealEntity>> = combine(allLogs, _selectedDate) { logs, date ->
@@ -48,6 +56,9 @@ class MealViewModel(
     val fat = MutableStateFlow("")
     val notes = MutableStateFlow("")
     val showingSuggestions = MutableStateFlow(false)
+
+    private val _calorieUiState = MutableStateFlow<CalorieUiState>(CalorieUiState.Idle)
+    val calorieUiState: StateFlow<CalorieUiState> = _calorieUiState
 
     val mealSuggestions: StateFlow<List<MealEntity>> = combine(allLogs, mealName) { logs, name ->
         val query = name.trim().lowercase()
@@ -156,5 +167,40 @@ class MealViewModel(
         viewModelScope.launch {
             repository.deleteMealById(id)
         }
+    }
+
+    fun estimateCalories() {
+        val description = mealName.value
+        if (description.isBlank()) return
+
+        if (preferenceRepository.getAiProviderConfig() == null) {
+            _calorieUiState.value = CalorieUiState.NotConfigured
+            return
+        }
+
+        // Use the weight from the selected date for AI prompt
+        val endOfSelectedDay = DateUtils.getEndOfDay(_selectedDate.value).time
+        val weightForDate = allWeights.value
+            .filter { it.date <= endOfSelectedDay }
+            .maxByOrNull { it.date }?.weightKg
+
+        viewModelScope.launch {
+            _calorieUiState.value = CalorieUiState.Loading
+            calorieRepository.estimateMeal(description, weightForDate)
+                .onSuccess { (estimate, prompt) ->
+                    _calorieUiState.value = CalorieUiState.Success(estimate, prompt)
+                    calories.value = estimate.calories.toString()
+                    protein.value = estimate.protein_g?.toString() ?: ""
+                    carbs.value = estimate.carbs_g?.toString() ?: ""
+                    fat.value = estimate.fat_g?.toString() ?: ""
+                }
+                .onFailure { error ->
+                    _calorieUiState.value = CalorieUiState.Error(error.message ?: "Failed to estimate")
+                }
+        }
+    }
+
+    fun resetCalorieUiState() {
+        _calorieUiState.value = CalorieUiState.Idle
     }
 }

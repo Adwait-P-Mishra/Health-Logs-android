@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 
 @Composable
 fun AddButtonsRow(
@@ -19,7 +20,7 @@ fun AddButtonsRow(
 ) {
     Row(
         modifier = modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -52,7 +53,7 @@ fun AddButtonsRow(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun AddButtonsRowPreview() {
     MyApplicationTheme {

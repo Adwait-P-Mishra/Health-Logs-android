@@ -4,12 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.model.WorkoutSet
+import com.adprmi.healthLogs.model.WeightUnit
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
+import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.MealViewModel
 import com.adprmi.healthLogs.viewmodel.SearchViewModel
 import com.adprmi.healthLogs.viewmodel.SettingsViewModel
@@ -32,10 +36,20 @@ fun DashboardScreen(
     onLogWorkoutWithTitle: (String) -> Unit,
     onLogMealWithTitle: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToWeightTrend: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val selectedDate by workoutViewModel.selectedDate.collectAsState()
     val todayWorkouts by workoutViewModel.todayLogs.collectAsState()
+    val allWeights by workoutViewModel.allWeights.collectAsState()
+    
+    val weightForSelectedDate = remember(allWeights, selectedDate) {
+        val endOfSelectedDay = DateUtils.getEndOfDay(selectedDate).time
+        allWeights.filter { it.date <= endOfSelectedDay }
+            .maxByOrNull { it.date }
+    }
+    
+    val weightUnit by workoutViewModel.weightUnit.collectAsState()
     val todayMeals by mealViewModel.todayLogs.collectAsState()
 
     val totalCalories by mealViewModel.todayCaloriesSum.collectAsState()
@@ -60,6 +74,8 @@ fun DashboardScreen(
         onDateSelected = { workoutViewModel.changeSelectedDate(it) },
         todayWorkouts = todayWorkouts,
         todayMeals = todayMeals,
+        userWeightKg = weightForSelectedDate?.weightKg,
+        weightUnit = weightUnit,
         totalCalories = totalCalories,
         targetCalories = targetCalories,
         totalProtein = totalProtein,
@@ -83,11 +99,13 @@ fun DashboardScreen(
         onLogWorkoutWithTitle = onLogWorkoutWithTitle,
         onLogMealWithTitle = onLogMealWithTitle,
         onNavigateToSettings = onNavigateToSettings,
+        onSetUserWeightKg = { workoutViewModel.setUserWeightKg(it, selectedDate) },
+        onNavigateToWeightTrend = onNavigateToWeightTrend,
         modifier = modifier
     )
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun DashboardScreenPreview() {
     MyApplicationTheme {
@@ -116,6 +134,8 @@ fun DashboardScreenPreview() {
                     date = System.currentTimeMillis()
                 )
             ),
+            userWeightKg = 70.0,
+            weightUnit = WeightUnit.KG,
             totalCalories = 600,
             targetCalories = 2400,
             totalProtein = 30.0,
@@ -135,7 +155,9 @@ fun DashboardScreenPreview() {
             onNavigateToDailyMeals = {},
             onLogWorkoutWithTitle = {},
             onLogMealWithTitle = {},
-            onNavigateToSettings = {}
+            onNavigateToSettings = {},
+            onSetUserWeightKg = {},
+            onNavigateToWeightTrend = {}
         )
     }
 }

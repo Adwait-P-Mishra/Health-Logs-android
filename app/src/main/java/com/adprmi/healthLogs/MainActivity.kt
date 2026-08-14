@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.adprmi.healthLogs.data.AppDatabase
 import com.adprmi.healthLogs.data.AppRepository
+import com.adprmi.healthLogs.data.CalorieRepository
 import com.adprmi.healthLogs.data.PreferenceRepository
 import com.adprmi.healthLogs.ui.components.MealEditorSheet
 import com.adprmi.healthLogs.ui.components.WorkoutEditorSheet
@@ -39,9 +40,10 @@ class MainActivity : ComponentActivity() {
 
         // Initialize Local Repositories and Factories
         val database = AppDatabase.getDatabase(this)
-        val appRepository = AppRepository(database.exerciseDao(), database.mealDao())
-        val preferenceRepository = PreferenceRepository(this)
-        val factory = ViewModelFactory(appRepository, preferenceRepository, moshi)
+        val appRepository = AppRepository(database.exerciseDao(), database.mealDao(), database.weightDao())
+        val preferenceRepository = PreferenceRepository(this, moshi)
+        val calorieRepository = CalorieRepository(preferenceRepository, moshi)
+        val factory = ViewModelFactory(appRepository, preferenceRepository, calorieRepository, moshi)
 
         setContent {
             val isDarkMode by preferenceRepository.isDarkMode.collectAsState()
@@ -87,12 +89,51 @@ fun AppNavigation(
     ) {
         // 1. Splash Screen
         composable("splash") {
+            val onboardingShown by settingsViewModel.aiOnboardingShown.collectAsState()
             SplashScreen(
                 onSplashFinished = {
-                    navController.navigate("dashboard") {
+                    val destination = if (onboardingShown) "dashboard" else "ai_welcome"
+                    navController.navigate(destination) {
                         popUpTo("splash") { inclusive = true }
                     }
                 },
+            )
+        }
+
+        // AI Onboarding Screens
+        composable("ai_welcome") {
+            AiOnboardingWelcomeScreen(
+                onSetUpAi = { navController.navigate("ai_endpoint_choice") },
+                onSkip = {
+                    settingsViewModel.setAiOnboardingShown(true)
+                    navController.navigate("dashboard") {
+                        popUpTo("ai_welcome") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("ai_endpoint_choice") {
+            AiEndpointChoiceScreen(
+                onChoice = { isHosted -> navController.navigate("ai_config/$isHosted") },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "ai_config/{isHosted}",
+            arguments = listOf(navArgument("isHosted") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val isHosted = backStackEntry.arguments?.getBoolean("isHosted") ?: true
+            AiConfigScreen(
+                viewModel = settingsViewModel,
+                isHosted = isHosted,
+                onSuccess = {
+                    navController.navigate("dashboard") {
+                        popUpTo("ai_welcome") { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -138,6 +179,9 @@ fun AppNavigation(
                     },
                     onNavigateToSettings = {
                         navController.navigate("settings")
+                    },
+                    onNavigateToWeightTrend = {
+                        navController.navigate("weight_trend")
                     }
                 )
 
@@ -166,13 +210,33 @@ fun AppNavigation(
             }
         }
 
+        composable("weight_trend") {
+            WeightTrendScreen(
+                viewModel = workoutViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         // 3. Settings Screen
         composable("settings") {
             SettingsScreen(
                 settingsViewModel = settingsViewModel,
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onNavigateToAiSetup = {
+                    val config = settingsViewModel.aiProviderConfig.value
+                    if (config != null) {
+                        navController.navigate("ai_config/${!config.isLocal}")
+                    } else {
+                        navController.navigate("ai_endpoint_choice")
+                    }
+                },
+                onResetApp = {
+                    navController.navigate("splash") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -259,6 +323,9 @@ fun AppNavigation(
                         workoutViewModel.startEditLog(entity)
                         showWorkoutEditor = true
                     },
+                    onNavigateToWeightTrend = {
+                        navController.navigate("weight_trend")
+                    }
                 )
 
                 AnimatedVisibility(

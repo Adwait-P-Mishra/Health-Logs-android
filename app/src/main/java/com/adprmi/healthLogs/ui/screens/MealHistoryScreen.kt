@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.MealViewModel
@@ -135,14 +136,19 @@ fun MealHistoryContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPadding)
-                    .padding(12.dp),
+                    .consumeWindowInsets(innerPadding),
+                contentPadding = PaddingValues(
+                    start = 16.dp + innerPadding.calculateStartPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    top = 16.dp + innerPadding.calculateTopPadding(),
+                    end = 16.dp + innerPadding.calculateEndPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    bottom = 16.dp + innerPadding.calculateBottomPadding()
+                ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(mealLogs) { log ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
@@ -283,7 +289,7 @@ private fun MacroColumn(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun MealHistoryPreview() {
     MyApplicationTheme {

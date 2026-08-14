@@ -2,12 +2,13 @@ package com.adprmi.healthLogs.data
 
 import androidx.room.TypeConverter
 import com.adprmi.healthLogs.model.WorkoutSet
+import com.adprmi.healthLogs.model.WeightUnit
 
 class Converters {
     @TypeConverter
     fun fromSetsList(sets: List<WorkoutSet>?): String {
         if (sets == null) return ""
-        return sets.joinToString(";") { "${it.weight}:${it.reps}:${it.id}" }
+        return sets.joinToString(";") { "${it.weight}:${it.reps}:${it.id}:${it.unit.name}" }
     }
 
     @TypeConverter
@@ -19,7 +20,14 @@ class Converters {
                 val weight = parts[0]
                 val reps = parts[1]
                 val id = if (parts.size >= 3) parts[2] else java.util.UUID.randomUUID().toString()
-                WorkoutSet(id = id, weight = weight, reps = reps)
+                val unit = if (parts.size >= 4) {
+                    try {
+                        WeightUnit.valueOf(parts[3])
+                    } catch (e: Exception) {
+                        WeightUnit.KG
+                    }
+                } else WeightUnit.KG
+                WorkoutSet(id = id, weight = weight, reps = reps, unit = unit)
             } else null
         }
     }

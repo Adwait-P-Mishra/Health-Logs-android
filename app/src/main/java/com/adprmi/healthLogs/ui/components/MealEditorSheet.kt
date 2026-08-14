@@ -25,7 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import com.adprmi.healthLogs.model.CalorieUiState
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
+import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.MealViewModel
@@ -48,9 +50,22 @@ fun MealEditorSheet(
     val lastMatchingLog by viewModel.lastMatchingLog.collectAsState()
     val canSave by viewModel.canSaveLog.collectAsState()
     val editingId by viewModel.editingLogId.collectAsState()
+    val calorieUiState by viewModel.calorieUiState.collectAsState()
 
     BackHandler {
         onDismiss()
+    }
+
+    var showAssumptionsSheet by remember { mutableStateOf(false) }
+    var assumptions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var currentPrompt by remember { mutableStateOf("") }
+
+    if (showAssumptionsSheet) {
+        AiAssumptionsSheet(
+            assumptions = assumptions,
+            prompt = currentPrompt,
+            onDismiss = { showAssumptionsSheet = false }
+        )
     }
 
     MealEditorContent(
@@ -84,6 +99,14 @@ fun MealEditorSheet(
         lastMatchingLog = lastMatchingLog,
         canSave = canSave,
         editingId = editingId,
+        calorieUiState = calorieUiState,
+        onEstimateCalories = { viewModel.estimateCalories() },
+        onResetCalorieUiState = { viewModel.resetCalorieUiState() },
+        onShowAssumptions = { list, prompt ->
+            assumptions = list
+            currentPrompt = prompt
+            showAssumptionsSheet = true
+        },
         onSave = {
             viewModel.saveCurrentLog()
             onDismiss()
@@ -114,6 +137,10 @@ fun MealEditorContent(
     lastMatchingLog: MealEntity?,
     canSave: Boolean,
     editingId: String?,
+    calorieUiState: CalorieUiState,
+    onEstimateCalories: () -> Unit,
+    onResetCalorieUiState: () -> Unit,
+    onShowAssumptions: (List<String>, String) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
@@ -124,6 +151,7 @@ fun MealEditorContent(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
             .testTag("meal_editor_sheet")
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -171,17 +199,16 @@ fun MealEditorContent(
                     .fillMaxSize()
                     .weight(1f)
                     .verticalScroll(scrollState)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(horizontal = 16.dp),
             ) {
                 // Meal Name
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
                         Text(
                             text = "MEAL NAME",
                             style = MaterialTheme.typography.labelMedium,
@@ -261,7 +288,7 @@ fun MealEditorContent(
                 lastMatchingLog?.let { prevLog ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
@@ -292,16 +319,28 @@ fun MealEditorContent(
                 // Nutrition Facts Section
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Nutrition Facts",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Nutrition Facts",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            AiEstimateButton(
+                                uiState = calorieUiState,
+                                onClick = onEstimateCalories,
+                                onDismissError = onResetCalorieUiState,
+                                onShowAssumptions = onShowAssumptions
+                            )
+                        }
                         Spacer(Modifier.height(16.dp))
                         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                         Spacer(Modifier.height(16.dp))
@@ -337,7 +376,7 @@ fun MealEditorContent(
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                        Spacer(Modifier.height(24.dp))
+                        Spacer(Modifier.height(16.dp))
 
                         // Macros Grid
                         Row(
@@ -354,11 +393,11 @@ fun MealEditorContent(
                 // Notes Text field
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
                         Text(
                             text = "NOTES (OPTIONAL)",
                             style = MaterialTheme.typography.labelMedium,
@@ -384,14 +423,17 @@ fun MealEditorContent(
                         )
                     }
                 }
-                Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(120.dp))
             }
         }
 
         // Sticky Bottom Save Button
         Surface(
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-            color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .navigationBarsPadding(),
+            color = MaterialTheme.colorScheme.background,
             shadowElevation = 8.dp
         ) {
             Button(
@@ -441,7 +483,7 @@ fun MacroInputField(label: String, value: String, onValueChange: (String) -> Uni
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 fun MealEditorPreview() {
     MyApplicationTheme {
@@ -472,6 +514,10 @@ fun MealEditorPreview() {
             ),
             canSave = true,
             editingId = null,
+            calorieUiState = CalorieUiState.Idle,
+            onEstimateCalories = {},
+            onResetCalorieUiState = {},
+            onShowAssumptions = { _, _ -> },
             onSave = {},
             onDismiss = {}
         )
