@@ -12,7 +12,10 @@ data class ExerciseEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val date: Long, // timestamp
     val exerciseName: String,
-    val sets: List<WorkoutSet>,
+    val exerciseType: String = "strength", // "strength" or "cardio"
+    val sets: List<WorkoutSet> = emptyList(),
+    val cardioAmount: Double? = null,
+    val cardioUnit: String? = null,
     val notes: String = "",
     val caloriesBurned: Int? = null
 )

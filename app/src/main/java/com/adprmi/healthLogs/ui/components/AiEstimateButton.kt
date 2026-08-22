@@ -23,7 +23,8 @@ fun AiEstimateButton(
     uiState: CalorieUiState,
     onClick: () -> Unit,
     onDismissError: () -> Unit,
-    onShowAssumptions: (List<String>, String) -> Unit
+    onShowAssumptions: (List<String>, String) -> Unit,
+    label: String = "Estimate"
 ) {
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -78,15 +79,18 @@ fun AiEstimateButton(
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) {
-                    Text("Estimate", style = MaterialTheme.typography.labelMedium)
+                    Text(label, style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
 
-        if (uiState is CalorieUiState.Success && uiState.estimate.assumptions.isNotEmpty()) {
+        if (uiState is CalorieUiState.Success && (uiState.estimate.assumptions.isNotEmpty() || uiState.assumptions.isNotEmpty())) {
             Spacer(modifier = Modifier.width(8.dp))
             IconButton(
-                onClick = { onShowAssumptions(uiState.estimate.assumptions, uiState.prompt) },
+                onClick = { 
+                    val allAssumptions = (uiState.estimate.assumptions + uiState.assumptions).distinct()
+                    onShowAssumptions(allAssumptions, uiState.prompt) 
+                },
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(

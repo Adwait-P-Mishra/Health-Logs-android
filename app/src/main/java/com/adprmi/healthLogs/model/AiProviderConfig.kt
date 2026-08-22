@@ -23,7 +23,7 @@ data class CalorieEstimate(
 sealed class CalorieUiState {
     object Idle : CalorieUiState()
     object Loading : CalorieUiState()
-    data class Success(val estimate: CalorieEstimate, val prompt: String) : CalorieUiState()
+    data class Success(val estimate: CalorieEstimate, val prompt: String, val assumptions: List<String> = emptyList()) : CalorieUiState()
     data class Error(val message: String) : CalorieUiState()
     object NotConfigured : CalorieUiState()  // AI setup was skipped
 }

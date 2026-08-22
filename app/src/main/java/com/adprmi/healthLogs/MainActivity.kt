@@ -90,13 +90,40 @@ fun AppNavigation(
         // 1. Splash Screen
         composable("splash") {
             val onboardingShown by settingsViewModel.aiOnboardingShown.collectAsState()
+            val userGender by settingsViewModel.userGender.collectAsState()
             SplashScreen(
                 onSplashFinished = {
-                    val destination = if (onboardingShown) "dashboard" else "ai_welcome"
+                    val destination = when {
+                        userGender == null -> "welcome_profile"
+                        !onboardingShown -> "ai_welcome"
+                        else -> "dashboard"
+                    }
                     navController.navigate(destination) {
                         popUpTo("splash") { inclusive = true }
                     }
                 },
+            )
+        }
+
+        composable("welcome_profile") {
+            WelcomeProfileScreen(
+                onContinue = { gender, weightKg, heightCm, wUnit, hUnit ->
+                    settingsViewModel.setUserGender(gender)
+                    settingsViewModel.setUserHeightCm(heightCm)
+                    settingsViewModel.setWeightUnit(wUnit)
+                    settingsViewModel.setHeightUnit(hUnit)
+                    workoutViewModel.setUserWeightKg(weightKg)
+
+                    navController.navigate("ai_welcome") {
+                        popUpTo("welcome_profile") { inclusive = true }
+                    }
+                },
+                onSkip = {
+                    settingsViewModel.setUserGender("not_specified")
+                    navController.navigate("ai_welcome") {
+                        popUpTo("welcome_profile") { inclusive = true }
+                    }
+                }
             )
         }
 

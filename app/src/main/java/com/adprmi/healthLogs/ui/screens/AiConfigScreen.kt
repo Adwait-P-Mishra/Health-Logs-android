@@ -56,26 +56,28 @@ fun AiConfigScreen(
         }
     }
 
-    when (currentStep) {
-        AiConfigStep.CONFIG -> {
-            AiConfigContent(
-                isTesting = isTesting,
-                testResult = testResult,
-                aiProviderConfig = aiProviderConfig,
-                isHosted = isHosted,
-                onTestConnection = { viewModel.testConnection(it) },
-                onSetAiProviderConfig = { viewModel.setAiProviderConfig(it) },
-                onSetAiOnboardingShown = { viewModel.setAiOnboardingShown(it) },
-                onBack = onBack
-            )
-        }
-        AiConfigStep.SUCCESS -> {
-            AiConnectionSuccessContent(
-                onGoToDashboard = {
-                    viewModel.resetTestResult()
-                    onSuccess()
-                }
-            )
+    MyApplicationTheme(darkTheme = false) {
+        when (currentStep) {
+            AiConfigStep.CONFIG -> {
+                AiConfigContent(
+                    isTesting = isTesting,
+                    testResult = testResult,
+                    aiProviderConfig = aiProviderConfig,
+                    isHosted = isHosted,
+                    onTestConnection = { viewModel.testConnection(it) },
+                    onSetAiProviderConfig = { viewModel.setAiProviderConfig(it) },
+                    onSetAiOnboardingShown = { viewModel.setAiOnboardingShown(it) },
+                    onBack = onBack
+                )
+            }
+            AiConfigStep.SUCCESS -> {
+                AiConnectionSuccessContent(
+                    onGoToDashboard = {
+                        viewModel.resetTestResult()
+                        onSuccess()
+                    }
+                )
+            }
         }
     }
 }
@@ -343,7 +345,7 @@ fun AiConfigContent(
                         OutlinedTextField(
                             value = model,
                             onValueChange = { model = it },
-                            placeholder = { Text("gemini-1.5-flash") },
+                            placeholder = { Text("gemini-3.7-flash") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp)
                         )

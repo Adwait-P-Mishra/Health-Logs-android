@@ -20,6 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
 import com.adprmi.healthLogs.ui.theme.ThemePreviews
+import com.adprmi.healthLogs.model.CalorieUiState
+import com.adprmi.healthLogs.ui.components.AiAssumptionsSheet
+import com.adprmi.healthLogs.ui.components.AiEstimateButton
+import com.adprmi.healthLogs.ui.components.DeleteConfirmationDialog
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.MealViewModel
@@ -35,6 +39,7 @@ fun DailyMealScreen(
 ) {
     val allLogs by viewModel.allLogs.collectAsState()
     val targetDate = Date(dateMillis)
+    val calorieUiState by viewModel.calorieUiState.collectAsState()
 
     val dailyLogs = remember(allLogs, dateMillis) {
         allLogs.filter { DateUtils.isSameDay(Date(it.date), targetDate) }
@@ -44,9 +49,12 @@ fun DailyMealScreen(
     DailyMealContent(
         date = targetDate,
         dailyLogs = dailyLogs,
+        calorieUiState = calorieUiState,
         onBack = onBack,
         onEditTriggered = onEditTriggered,
         onDeleteLog = { viewModel.deleteLog(it) },
+        onEstimateBatch = { viewModel.estimateBatchForDay() },
+        onResetCalorieUiState = { viewModel.resetCalorieUiState() },
         modifier = modifier
     )
 }
@@ -56,11 +64,39 @@ fun DailyMealScreen(
 fun DailyMealContent(
     date: Date,
     dailyLogs: List<MealEntity>,
+    calorieUiState: CalorieUiState,
     onBack: () -> Unit,
     onEditTriggered: (MealEntity) -> Unit,
     onDeleteLog: (String) -> Unit,
+    onEstimateBatch: () -> Unit,
+    onResetCalorieUiState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDeleteLogConfirm by remember { mutableStateOf<String?>(null) }
+    var showAssumptionsSheet by remember { mutableStateOf(false) }
+    var assumptions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var currentPrompt by remember { mutableStateOf("") }
+
+    if (showAssumptionsSheet) {
+        AiAssumptionsSheet(
+            assumptions = assumptions,
+            prompt = currentPrompt,
+            onDismiss = { showAssumptionsSheet = false }
+        )
+    }
+
+    if (showDeleteLogConfirm != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Meal",
+            message = "Are you sure you want to delete this meal log?",
+            onConfirm = {
+                onDeleteLog(showDeleteLogConfirm!!)
+                showDeleteLogConfirm = null
+            },
+            onDismiss = { showDeleteLogConfirm = null }
+        )
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -80,6 +116,21 @@ fun DailyMealContent(
                     navigationIcon = {
                         IconButton(onClick = onBack, modifier = Modifier.testTag("back_button")) {
                             Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        if (dailyLogs.any { it.calories == 0 }) {
+                            AiEstimateButton(
+                                uiState = calorieUiState,
+                                onClick = onEstimateBatch,
+                                onDismissError = onResetCalorieUiState,
+                                onShowAssumptions = { list, prompt ->
+                                    assumptions = list
+                                    currentPrompt = prompt
+                                    showAssumptionsSheet = true
+                                },
+                                label = "Estimate All"
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -182,7 +233,7 @@ fun DailyMealContent(
                                     }
 
                                     IconButton(
-                                        onClick = { onDeleteLog(log.id) },
+                                        onClick = { showDeleteLogConfirm = log.id },
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
@@ -319,9 +370,12 @@ fun DailyMealPreview() {
             DailyMealContent(
                 date = Date(),
                 dailyLogs = sampleLogs,
+                calorieUiState = CalorieUiState.Idle,
                 onBack = {},
                 onEditTriggered = {},
-                onDeleteLog = {}
+                onDeleteLog = {},
+                onEstimateBatch = {},
+                onResetCalorieUiState = {}
             )
         }
     }
@@ -334,9 +388,12 @@ fun DailyMealEmptyPreview() {
         DailyMealContent(
             date = Date(),
             dailyLogs = emptyList(),
+            calorieUiState = CalorieUiState.Idle,
             onBack = {},
             onEditTriggered = {},
-            onDeleteLog = {}
+            onDeleteLog = {},
+            onEstimateBatch = {},
+            onResetCalorieUiState = {}
         )
     }
 }

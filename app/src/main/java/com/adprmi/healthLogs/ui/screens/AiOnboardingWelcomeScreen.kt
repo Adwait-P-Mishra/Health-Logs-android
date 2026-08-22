@@ -36,106 +36,108 @@ fun AiOnboardingWelcomeScreen(
     onSetUpAi: () -> Unit,
     onSkip: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
-            .safeDrawingPadding()
-    ) {
-        // Decorative Ambient Glow
+    MyApplicationTheme(darkTheme = false) {
         Box(
             modifier = Modifier
-                .size(300.dp)
-                .align(Alignment.TopCenter)
-                .offset(y = 100.dp)
-                .blur(80.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                    shape = CircleShape
-                )
-        )
-
-        Column(
-            modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(MaterialTheme.colorScheme.primary)
+                .safeDrawingPadding()
         ) {
-            // Top Section: Visual / Illustration
+            // Decorative Ambient Glow
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                AiIllustration()
-            }
+                    .size(300.dp)
+                    .align(Alignment.TopCenter)
+                    .offset(y = 100.dp)
+                    .blur(80.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        shape = CircleShape
+                    )
+            )
 
-            // Middle Section: Typography
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "AI-Powered Precision",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Want to set up AI-powered calorie estimation? You'll need an API key from a provider like Google Gemini or OpenAI.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = PrimaryFixedDim,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
+                // Top Section: Visual / Illustration
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AiIllustration()
+                }
 
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Bottom Section: Actions
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    onClick = onSetUpAi,
+                // Middle Section: Typography
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "SET UP AI",
-                        style = MaterialTheme.typography.labelMedium,
-                        letterSpacing = 2.sp
+                        text = "AI-Powered Precision",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Want to set up AI-powered calorie estimation? You'll need an API key from a provider like Google Gemini or OpenAI.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = PrimaryFixedDim,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
 
-                OutlinedButton(
-                    onClick = onSkip,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = PrimaryFixed
-                    )
+                Spacer(modifier = Modifier.height(48.dp))
+
+                // Bottom Section: Actions
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "SKIP FOR NOW",
-                        style = MaterialTheme.typography.labelMedium,
-                        letterSpacing = 2.sp
-                    )
+                    Button(
+                        onClick = onSetUpAi,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                    ) {
+                        Text(
+                            text = "SET UP AI",
+                            style = MaterialTheme.typography.labelMedium,
+                            letterSpacing = 2.sp
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = onSkip,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = PrimaryFixed
+                        )
+                    ) {
+                        Text(
+                            text = "SKIP FOR NOW",
+                            style = MaterialTheme.typography.labelMedium,
+                            letterSpacing = 2.sp
+                        )
+                    }
                 }
             }
         }

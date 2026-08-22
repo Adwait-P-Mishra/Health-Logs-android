@@ -10,6 +10,7 @@ import com.adprmi.healthLogs.data.WeightEntity
 import com.adprmi.healthLogs.model.WorkoutSet
 import com.adprmi.healthLogs.model.WeightUnit
 import com.adprmi.healthLogs.model.CalorieUiState
+import com.adprmi.healthLogs.model.CalorieEstimate
 import com.adprmi.healthLogs.util.DateUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -42,10 +43,14 @@ class WorkoutViewModel(
     // Form states for creating/editing logs
     var editingLogId = MutableStateFlow<String?>(null)
     val exerciseName = MutableStateFlow("")
+    val exerciseType = MutableStateFlow("strength") // "strength" or "cardio"
     val draftSets = MutableStateFlow(listOf(WorkoutSet(unit = weightUnit.value)))
+    val cardioAmount = MutableStateFlow("")
+    val cardioUnit = MutableStateFlow("minutes")
     val caloriesBurned = MutableStateFlow("")
     val notes = MutableStateFlow("")
     val showingSuggestions = MutableStateFlow(false)
+    val isEstimateLater = MutableStateFlow(false)
 
     private val _calorieUiState = MutableStateFlow<CalorieUiState>(CalorieUiState.Idle)
     val calorieUiState: StateFlow<CalorieUiState> = _calorieUiState
@@ -127,33 +132,47 @@ class WorkoutViewModel(
 
     fun applySuggestion(log: ExerciseEntity) {
         exerciseName.value = log.exerciseName
+        exerciseType.value = log.exerciseType
         // copy sets
         draftSets.value = log.sets.map { WorkoutSet(weight = it.weight, reps = it.reps, unit = weightUnit.value) }
+        cardioAmount.value = log.cardioAmount?.toString() ?: ""
+        cardioUnit.value = log.cardioUnit ?: "minutes"
         caloriesBurned.value = log.caloriesBurned?.toString() ?: ""
         notes.value = log.notes
         showingSuggestions.value = false
+        isEstimateLater.value = log.caloriesBurned == 0
     }
 
     fun startNewLog(name: String = "") {
         editingLogId.value = null
         exerciseName.value = name
-        
+        exerciseType.value = "strength"
+        isEstimateLater.value = false
+
         if (name.isNotEmpty()) {
             val lastLog = allLogs.value
                 .filter { it.exerciseName.trim().equals(name.trim(), ignoreCase = true) }
                 .maxByOrNull { it.date }
             
             if (lastLog != null) {
+                exerciseType.value = lastLog.exerciseType
                 draftSets.value = lastLog.sets.map { WorkoutSet(weight = it.weight, reps = it.reps, unit = weightUnit.value) }
-                caloriesBurned.value = lastLog.caloriesBurned?.toString() ?: ""
+                cardioAmount.value = lastLog.cardioAmount?.toString() ?: ""
+                cardioUnit.value = lastLog.cardioUnit ?: "minutes"
+                caloriesBurned.value = if ((lastLog.caloriesBurned ?: 0) > 0) lastLog.caloriesBurned?.toString() ?: "" else ""
                 notes.value = lastLog.notes
+                isEstimateLater.value = lastLog.caloriesBurned == 0
             } else {
                 draftSets.value = listOf(WorkoutSet(unit = weightUnit.value))
+                cardioAmount.value = ""
+                cardioUnit.value = "minutes"
                 caloriesBurned.value = ""
                 notes.value = ""
             }
         } else {
             draftSets.value = listOf(WorkoutSet(unit = weightUnit.value))
+            cardioAmount.value = ""
+            cardioUnit.value = "minutes"
             caloriesBurned.value = ""
             notes.value = ""
         }
@@ -164,14 +183,38 @@ class WorkoutViewModel(
     fun startEditLog(log: ExerciseEntity) {
         editingLogId.value = log.id
         exerciseName.value = log.exerciseName
+        exerciseType.value = log.exerciseType
         draftSets.value = log.sets.map { WorkoutSet(id = it.id, weight = it.weight, reps = it.reps, unit = it.unit) }
-        caloriesBurned.value = log.caloriesBurned?.toString() ?: ""
+        cardioAmount.value = log.cardioAmount?.toString() ?: ""
+        cardioUnit.value = log.cardioUnit ?: "minutes"
+        caloriesBurned.value = if ((log.caloriesBurned ?: 0) > 0) log.caloriesBurned?.toString() ?: "" else ""
         notes.value = log.notes
         showingSuggestions.value = false
+        isEstimateLater.value = log.caloriesBurned == 0
     }
 
-    val canSaveLog: StateFlow<Boolean> = combine(exerciseName, draftSets) { name, sets ->
-        name.trim().isNotEmpty() && sets.isNotEmpty() && sets.all { it.weight.isNotEmpty() && it.reps.isNotEmpty() }
+    val canSaveLog: StateFlow<Boolean> = combine(
+        exerciseName, 
+        exerciseType, 
+        draftSets, 
+        cardioAmount, 
+        isEstimateLater, 
+        caloriesBurned
+    ) { flows ->
+        val name = flows[0] as String
+        val type = flows[1] as String
+        val sets = flows[2] as List<WorkoutSet>
+        val amount = flows[3] as String
+        val estimateLater = flows[4] as Boolean
+        val kcal = flows[5] as String
+        
+        val nameOk = name.trim().isNotEmpty()
+        val baseOk = if (type == "strength") {
+            nameOk && sets.isNotEmpty() && sets.all { it.weight.isNotEmpty() && it.reps.isNotEmpty() }
+        } else {
+            nameOk && amount.toDoubleOrNull() != null
+        }
+        baseOk && (estimateLater || kcal.toIntOrNull() != null)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun saveCurrentLog() {
@@ -179,13 +222,17 @@ class WorkoutViewModel(
         viewModelScope.launch {
             val id = editingLogId.value ?: UUID.randomUUID().toString()
             val currentUnit = weightUnit.value
+            val finalCaloriesBurned = if (isEstimateLater.value) 0 else (caloriesBurned.value.toIntOrNull() ?: 0)
             val entity = ExerciseEntity(
                 id = id,
                 date = _selectedDate.value.time,
                 exerciseName = exerciseName.value.trim(),
-                sets = draftSets.value.map { it.copy(unit = currentUnit) },
+                exerciseType = exerciseType.value,
+                sets = if (exerciseType.value == "strength") draftSets.value.map { it.copy(unit = currentUnit) } else emptyList(),
+                cardioAmount = if (exerciseType.value == "cardio") cardioAmount.value.toDoubleOrNull() else null,
+                cardioUnit = if (exerciseType.value == "cardio") cardioUnit.value else null,
                 notes = notes.value.trim(),
-                caloriesBurned = caloriesBurned.value.toIntOrNull()
+                caloriesBurned = finalCaloriesBurned
             )
             repository.insertExercise(entity)
             startNewLog()
@@ -218,18 +265,70 @@ class WorkoutViewModel(
             return
         }
 
-        val setsDescription = draftSets.value.joinToString { "${it.weight} ${it.unit.displayName} x ${it.reps} reps" }
+        val setsDescription = if (exerciseType.value == "strength") {
+            draftSets.value.joinToString { "${it.weight} ${it.unit.displayName} x ${it.reps} reps" }
+        } else {
+            "${cardioAmount.value} ${cardioUnit.value}"
+        }
         val fullDescription = "$description ($setsDescription)"
 
         viewModelScope.launch {
             _calorieUiState.value = CalorieUiState.Loading
-            calorieRepository.estimateExercise(fullDescription, weightForDate, null)
+            calorieRepository.estimateExercise(fullDescription, weightForDate, if (exerciseType.value == "cardio" && cardioUnit.value == "minutes") cardioAmount.value.toDoubleOrNull()?.toInt() else null)
                 .onSuccess { (estimate, prompt) ->
-                    _calorieUiState.value = CalorieUiState.Success(estimate, prompt)
+                    _calorieUiState.value = CalorieUiState.Success(estimate, prompt, estimate.assumptions)
                     caloriesBurned.value = estimate.calories.toString()
                 }
                 .onFailure { error ->
                     _calorieUiState.value = CalorieUiState.Error(error.message ?: "Failed to estimate")
+                }
+        }
+    }
+
+    fun estimateBatchForDay() {
+        val logsToEstimate = todayLogs.value.filter { it.caloriesBurned == null || it.caloriesBurned == 0 }
+        if (logsToEstimate.isEmpty()) return
+
+        if (preferenceRepository.getAiProviderConfig() == null) {
+            _calorieUiState.value = CalorieUiState.NotConfigured
+            return
+        }
+
+        val endOfSelectedDay = DateUtils.getEndOfDay(_selectedDate.value).time
+        val weightForDate = allWeights.value
+            .filter { it.date <= endOfSelectedDay }
+            .maxByOrNull { it.date }?.weightKg
+
+        if (weightForDate == null || weightForDate == 0.0) {
+            _calorieUiState.value = CalorieUiState.Error("Please set your weight first for accurate estimation.")
+            return
+        }
+
+        val descriptions = logsToEstimate.map { log ->
+            if (log.exerciseType == "strength") {
+                val setsDesc = log.sets.joinToString { "${it.weight} ${it.unit.displayName} x ${it.reps} reps" }
+                "${log.exerciseName} ($setsDesc)"
+            } else {
+                "${log.exerciseName} (${log.cardioAmount} ${log.cardioUnit})"
+            }
+        }
+
+        viewModelScope.launch {
+            _calorieUiState.value = CalorieUiState.Loading
+            calorieRepository.estimateBatchExercises(descriptions, weightForDate)
+                .onSuccess { (batchResult, prompt) ->
+                    _calorieUiState.value = CalorieUiState.Success(batchResult.estimates.firstOrNull() ?: CalorieEstimate(0), prompt, batchResult.assumptions)
+                    
+                    // Update logs in DB
+                    batchResult.estimates.forEachIndexed { index, estimate ->
+                        if (index < logsToEstimate.size) {
+                            val updatedLog = logsToEstimate[index].copy(caloriesBurned = estimate.calories)
+                            repository.insertExercise(updatedLog)
+                        }
+                    }
+                }
+                .onFailure { error ->
+                    _calorieUiState.value = CalorieUiState.Error(error.message ?: "Failed to estimate batch")
                 }
         }
     }

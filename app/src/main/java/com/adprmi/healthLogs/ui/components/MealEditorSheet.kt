@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,7 @@ fun MealEditorSheet(
     val canSave by viewModel.canSaveLog.collectAsState()
     val editingId by viewModel.editingLogId.collectAsState()
     val calorieUiState by viewModel.calorieUiState.collectAsState()
+    val isEstimateLater by viewModel.isEstimateLater.collectAsState()
 
     BackHandler {
         onDismiss()
@@ -100,6 +102,8 @@ fun MealEditorSheet(
         canSave = canSave,
         editingId = editingId,
         calorieUiState = calorieUiState,
+        isEstimateLater = isEstimateLater,
+        onEstimateLaterChange = { viewModel.isEstimateLater.value = it },
         onEstimateCalories = { viewModel.estimateCalories() },
         onResetCalorieUiState = { viewModel.resetCalorieUiState() },
         onShowAssumptions = { list, prompt ->
@@ -138,6 +142,8 @@ fun MealEditorContent(
     canSave: Boolean,
     editingId: String?,
     calorieUiState: CalorieUiState,
+    isEstimateLater: Boolean,
+    onEstimateLaterChange: (Boolean) -> Unit,
     onEstimateCalories: () -> Unit,
     onResetCalorieUiState: () -> Unit,
     onShowAssumptions: (List<String>, String) -> Unit,
@@ -334,13 +340,32 @@ fun MealEditorContent(
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            AiEstimateButton(
-                                uiState = calorieUiState,
-                                onClick = onEstimateCalories,
-                                onDismissError = onResetCalorieUiState,
-                                onShowAssumptions = onShowAssumptions
-                            )
                         }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Estimate Later",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Switch(
+                                checked = isEstimateLater,
+                                onCheckedChange = onEstimateLaterChange,
+                                modifier = Modifier.scale(0.8f).testTag("estimate_later_toggle")
+                            )
+
+                            if (!isEstimateLater) {
+                                Spacer(Modifier.width(8.dp))
+                                AiEstimateButton(
+                                    uiState = calorieUiState,
+                                    onClick = onEstimateCalories,
+                                    onDismissError = onResetCalorieUiState,
+                                    onShowAssumptions = onShowAssumptions
+                                )
+                            }
+                        }
+
                         Spacer(Modifier.height(16.dp))
                         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                         Spacer(Modifier.height(16.dp))
@@ -353,9 +378,10 @@ fun MealEditorContent(
                         )
                         Row(verticalAlignment = Alignment.Bottom) {
                             OutlinedTextField(
-                                value = calories,
+                                value = if (isEstimateLater) "" else calories,
                                 onValueChange = onCaloriesChange,
-                                placeholder = { Text("0") },
+                                placeholder = { Text(if (isEstimateLater) "TBD" else "0") },
+                                enabled = !isEstimateLater,
                                 modifier = Modifier
                                     .weight(1f)
                                     .testTag("meal_calories_input"),
@@ -363,7 +389,9 @@ fun MealEditorContent(
                                     focusedBorderColor = Color.Transparent,
                                     unfocusedBorderColor = Color.Transparent,
                                     focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledBorderColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent
                                 ),
                                 textStyle = MaterialTheme.typography.displaySmall,
                                 keyboardOptions = KeyboardOptions(
@@ -515,6 +543,8 @@ fun MealEditorPreview() {
             canSave = true,
             editingId = null,
             calorieUiState = CalorieUiState.Idle,
+            isEstimateLater = false,
+            onEstimateLaterChange = {},
             onEstimateCalories = {},
             onResetCalorieUiState = {},
             onShowAssumptions = { _, _ -> },

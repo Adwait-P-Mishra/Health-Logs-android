@@ -7,6 +7,7 @@ import com.adprmi.healthLogs.data.CalorieRepository
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.data.PreferenceRepository
 import com.adprmi.healthLogs.model.CalorieUiState
+import com.adprmi.healthLogs.model.CalorieEstimate
 import com.adprmi.healthLogs.util.DateUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ class MealViewModel(
     val fat = MutableStateFlow("")
     val notes = MutableStateFlow("")
     val showingSuggestions = MutableStateFlow(false)
+    val isEstimateLater = MutableStateFlow(false)
 
     private val _calorieUiState = MutableStateFlow<CalorieUiState>(CalorieUiState.Idle)
     val calorieUiState: StateFlow<CalorieUiState> = _calorieUiState
@@ -94,23 +96,26 @@ class MealViewModel(
         fat.value = log.fat?.toString() ?: ""
         notes.value = log.notes
         showingSuggestions.value = false
+        isEstimateLater.value = log.calories == 0
     }
 
     fun startNewLog(name: String = "") {
         editingLogId.value = null
         mealName.value = name
-        
+        isEstimateLater.value = false
+
         if (name.isNotEmpty()) {
             val lastLog = allLogs.value
                 .filter { it.mealName.trim().equals(name.trim(), ignoreCase = true) }
                 .maxByOrNull { it.date }
                 
             if (lastLog != null) {
-                calories.value = lastLog.calories.toString()
+                calories.value = if (lastLog.calories > 0) lastLog.calories.toString() else ""
                 protein.value = lastLog.protein?.toString() ?: ""
                 carbs.value = lastLog.carbs?.toString() ?: ""
                 fat.value = lastLog.fat?.toString() ?: ""
                 notes.value = lastLog.notes
+                isEstimateLater.value = lastLog.calories == 0
             } else {
                 calories.value = ""
                 protein.value = ""
@@ -132,27 +137,29 @@ class MealViewModel(
     fun startEditLog(log: MealEntity) {
         editingLogId.value = log.id
         mealName.value = log.mealName
-        calories.value = log.calories.toString()
+        calories.value = if (log.calories > 0) log.calories.toString() else ""
         protein.value = log.protein?.toString() ?: ""
         carbs.value = log.carbs?.toString() ?: ""
         fat.value = log.fat?.toString() ?: ""
         notes.value = log.notes
         showingSuggestions.value = false
+        isEstimateLater.value = log.calories == 0
     }
 
-    val canSaveLog: StateFlow<Boolean> = combine(mealName, calories) { name, kcal ->
-        name.trim().isNotEmpty() && kcal.toIntOrNull() != null
+    val canSaveLog: StateFlow<Boolean> = combine(mealName, calories, isEstimateLater) { name, kcal, estimateLater ->
+        name.trim().isNotEmpty() && (estimateLater || kcal.toIntOrNull() != null)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun saveCurrentLog() {
         if (!canSaveLog.value) return
         viewModelScope.launch {
             val id = editingLogId.value ?: UUID.randomUUID().toString()
+            val finalCalories = if (isEstimateLater.value) 0 else (calories.value.toIntOrNull() ?: 0)
             val entity = MealEntity(
                 id = id,
                 date = _selectedDate.value.time,
                 mealName = mealName.value.trim(),
-                calories = calories.value.toIntOrNull() ?: 0,
+                calories = finalCalories,
                 protein = protein.value.toDoubleOrNull(),
                 carbs = carbs.value.toDoubleOrNull(),
                 fat = fat.value.toDoubleOrNull(),
@@ -188,7 +195,7 @@ class MealViewModel(
             _calorieUiState.value = CalorieUiState.Loading
             calorieRepository.estimateMeal(description, weightForDate)
                 .onSuccess { (estimate, prompt) ->
-                    _calorieUiState.value = CalorieUiState.Success(estimate, prompt)
+                    _calorieUiState.value = CalorieUiState.Success(estimate, prompt, estimate.assumptions)
                     calories.value = estimate.calories.toString()
                     protein.value = estimate.protein_g?.toString() ?: ""
                     carbs.value = estimate.carbs_g?.toString() ?: ""
@@ -196,6 +203,46 @@ class MealViewModel(
                 }
                 .onFailure { error ->
                     _calorieUiState.value = CalorieUiState.Error(error.message ?: "Failed to estimate")
+                }
+        }
+    }
+
+    fun estimateBatchForDay() {
+        val logsToEstimate = todayLogs.value.filter { it.calories == 0 }
+        if (logsToEstimate.isEmpty()) return
+
+        if (preferenceRepository.getAiProviderConfig() == null) {
+            _calorieUiState.value = CalorieUiState.NotConfigured
+            return
+        }
+
+        val endOfSelectedDay = DateUtils.getEndOfDay(_selectedDate.value).time
+        val weightForDate = allWeights.value
+            .filter { it.date <= endOfSelectedDay }
+            .maxByOrNull { it.date }?.weightKg
+
+        val descriptions = logsToEstimate.map { it.mealName }
+
+        viewModelScope.launch {
+            _calorieUiState.value = CalorieUiState.Loading
+            calorieRepository.estimateBatchMeals(descriptions, weightForDate)
+                .onSuccess { (batchResult, prompt) ->
+                    _calorieUiState.value = CalorieUiState.Success(batchResult.estimates.firstOrNull() ?: CalorieEstimate(0), prompt, batchResult.assumptions)
+                    
+                    batchResult.estimates.forEachIndexed { index, estimate ->
+                        if (index < logsToEstimate.size) {
+                            val updatedLog = logsToEstimate[index].copy(
+                                calories = estimate.calories,
+                                protein = estimate.protein_g,
+                                carbs = estimate.carbs_g,
+                                fat = estimate.fat_g
+                            )
+                            repository.insertMeal(updatedLog)
+                        }
+                    }
+                }
+                .onFailure { error ->
+                    _calorieUiState.value = CalorieUiState.Error(error.message ?: "Failed to estimate batch")
                 }
         }
     }

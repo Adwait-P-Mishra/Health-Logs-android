@@ -21,6 +21,10 @@ import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
 import com.adprmi.healthLogs.ui.theme.ThemePreviews
 import com.adprmi.healthLogs.model.WorkoutSet
 import com.adprmi.healthLogs.model.WeightUnit
+import com.adprmi.healthLogs.model.CalorieUiState
+import com.adprmi.healthLogs.ui.components.AiAssumptionsSheet
+import com.adprmi.healthLogs.ui.components.AiEstimateButton
+import com.adprmi.healthLogs.ui.components.DeleteConfirmationDialog
 import com.adprmi.healthLogs.data.ExerciseEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.WorkoutViewModel
@@ -39,6 +43,7 @@ fun DailyWorkoutScreen(
     val allWeights by viewModel.allWeights.collectAsState()
     val targetDate = Date(dateMillis)
     val weightUnit by viewModel.weightUnit.collectAsState()
+    val calorieUiState by viewModel.calorieUiState.collectAsState()
 
     val dailyLogs = remember(allLogs, dateMillis) {
         allLogs.filter { DateUtils.isSameDay(Date(it.date), targetDate) }
@@ -57,11 +62,14 @@ fun DailyWorkoutScreen(
         dailyLogs = dailyLogs,
         userWeightKg = weightForDay?.weightKg,
         weightUnit = weightUnit,
+        calorieUiState = calorieUiState,
         onBack = onBack,
         onEditTriggered = onEditTriggered,
         onDeleteLog = { viewModel.deleteLog(it) },
         onSetUserWeightKg = { viewModel.setUserWeightKg(it, targetDate) },
         onWeightTrendClick = onNavigateToWeightTrend,
+        onEstimateBatch = { viewModel.estimateBatchForDay() },
+        onResetCalorieUiState = { viewModel.resetCalorieUiState() },
         modifier = modifier
     )
 }
@@ -73,14 +81,41 @@ fun DailyWorkoutContent(
     dailyLogs: List<ExerciseEntity>,
     userWeightKg: Double?,
     weightUnit: WeightUnit,
+    calorieUiState: CalorieUiState,
     onBack: () -> Unit,
     onEditTriggered: (ExerciseEntity) -> Unit,
     onDeleteLog: (String) -> Unit,
     onSetUserWeightKg: (Double) -> Unit,
     onWeightTrendClick: () -> Unit,
+    onEstimateBatch: () -> Unit,
+    onResetCalorieUiState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showUserWeightDialog by remember { mutableStateOf(false) }
+    var showDeleteLogConfirm by remember { mutableStateOf<String?>(null) }
+    var showAssumptionsSheet by remember { mutableStateOf(false) }
+    var assumptions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var currentPrompt by remember { mutableStateOf("") }
+
+    if (showAssumptionsSheet) {
+        AiAssumptionsSheet(
+            assumptions = assumptions,
+            prompt = currentPrompt,
+            onDismiss = { showAssumptionsSheet = false }
+        )
+    }
+
+    if (showDeleteLogConfirm != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Workout",
+            message = "Are you sure you want to delete this workout log?",
+            onConfirm = {
+                onDeleteLog(showDeleteLogConfirm!!)
+                showDeleteLogConfirm = null
+            },
+            onDismiss = { showDeleteLogConfirm = null }
+        )
+    }
 
     if (showUserWeightDialog) {
         var tempWeight by remember { mutableStateOf(userWeightKg?.toString() ?: "") }
@@ -136,6 +171,21 @@ fun DailyWorkoutContent(
                     navigationIcon = {
                         IconButton(onClick = onBack, modifier = Modifier.testTag("back_button")) {
                             Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        if (dailyLogs.any { it.caloriesBurned == null || it.caloriesBurned == 0 }) {
+                            AiEstimateButton(
+                                uiState = calorieUiState,
+                                onClick = onEstimateBatch,
+                                onDismissError = onResetCalorieUiState,
+                                onShowAssumptions = { list, prompt ->
+                                    assumptions = list
+                                    currentPrompt = prompt
+                                    showAssumptionsSheet = true
+                                },
+                                label = "Estimate All"
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -317,7 +367,9 @@ fun DailyWorkoutContent(
                                             style = MaterialTheme.typography.headlineMedium,
                                             color = MaterialTheme.colorScheme.primary
                                         )
-                                        Text("Barbell • Compound", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        log.caloriesBurned?.takeIf { it > 0 }?.let {
+                                            Text("$it kcal burned", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        } ?: Text("Barbell • Compound", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
 
@@ -335,7 +387,7 @@ fun DailyWorkoutContent(
                                     }
 
                                     IconButton(
-                                        onClick = { onDeleteLog(log.id) },
+                                        onClick = { showDeleteLogConfirm = log.id },
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
@@ -442,11 +494,14 @@ fun DailyWorkoutPreview() {
             dailyLogs = sampleLogs,
             userWeightKg = 75.0,
             weightUnit = WeightUnit.KG,
+            calorieUiState = CalorieUiState.Idle,
             onBack = {},
             onEditTriggered = {},
             onDeleteLog = {},
             onSetUserWeightKg = {},
-            onWeightTrendClick = {}
+            onWeightTrendClick = {},
+            onEstimateBatch = {},
+            onResetCalorieUiState = {}
         )
     }
 }
@@ -460,11 +515,14 @@ fun DailyWorkoutEmptyPreview() {
             dailyLogs = emptyList(),
             userWeightKg = null,
             weightUnit = WeightUnit.KG,
+            calorieUiState = CalorieUiState.Idle,
             onBack = {},
             onEditTriggered = {},
             onDeleteLog = {},
             onSetUserWeightKg = {},
-            onWeightTrendClick = {}
+            onWeightTrendClick = {},
+            onEstimateBatch = {},
+            onResetCalorieUiState = {}
         )
     }
 }

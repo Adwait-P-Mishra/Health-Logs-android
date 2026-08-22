@@ -16,6 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -45,7 +47,10 @@ fun WorkoutEditorSheet(
     modifier: Modifier = Modifier
 ) {
     val exerciseName by viewModel.exerciseName.collectAsState()
+    val exerciseType by viewModel.exerciseType.collectAsState()
     val draftSets by viewModel.draftSets.collectAsState()
+    val cardioAmount by viewModel.cardioAmount.collectAsState()
+    val cardioUnit by viewModel.cardioUnit.collectAsState()
     val caloriesBurned by viewModel.caloriesBurned.collectAsState()
     val notes by viewModel.notes.collectAsState()
     val showingSuggestions by viewModel.showingSuggestions.collectAsState()
@@ -55,6 +60,7 @@ fun WorkoutEditorSheet(
     val editingId by viewModel.editingLogId.collectAsState()
     val weightUnit by viewModel.weightUnit.collectAsState()
     val calorieUiState by viewModel.calorieUiState.collectAsState()
+    val isEstimateLater by viewModel.isEstimateLater.collectAsState()
 
     var showAssumptionsSheet by remember { mutableStateOf(false) }
     var assumptions by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -78,10 +84,16 @@ fun WorkoutEditorSheet(
             viewModel.exerciseName.value = it
             viewModel.showingSuggestions.value = it.trim().length >= 2
         },
+        exerciseType = exerciseType,
+        onExerciseTypeChange = { viewModel.exerciseType.value = it },
         draftSets = draftSets,
         onUpdateSet = { index, weight, reps -> viewModel.updateSet(index, weight, reps) },
         onAddSet = { viewModel.addSetCopyingPrevious() },
         onRemoveSet = { id -> viewModel.removeSet(id) },
+        cardioAmount = cardioAmount,
+        onCardioAmountChange = { viewModel.cardioAmount.value = it },
+        cardioUnit = cardioUnit,
+        onCardioUnitChange = { viewModel.cardioUnit.value = it },
         caloriesBurned = caloriesBurned,
         onCaloriesBurnedChange = { viewModel.caloriesBurned.value = it.filter { it.isDigit() } },
         calorieUiState = calorieUiState,
@@ -101,6 +113,8 @@ fun WorkoutEditorSheet(
         canSave = canSave,
         editingId = editingId,
         weightUnit = weightUnit,
+        isEstimateLater = isEstimateLater,
+        onEstimateLaterChange = { viewModel.isEstimateLater.value = it },
         onSave = {
             viewModel.saveCurrentLog()
             onDismiss()
@@ -115,10 +129,16 @@ fun WorkoutEditorSheet(
 fun WorkoutEditorContent(
     exerciseName: String,
     onExerciseNameChange: (String) -> Unit,
+    exerciseType: String,
+    onExerciseTypeChange: (String) -> Unit,
     draftSets: List<WorkoutSet>,
     onUpdateSet: (Int, String, String) -> Unit,
     onAddSet: () -> Unit,
     onRemoveSet: (String) -> Unit,
+    cardioAmount: String,
+    onCardioAmountChange: (String) -> Unit,
+    cardioUnit: String,
+    onCardioUnitChange: (String) -> Unit,
     caloriesBurned: String,
     onCaloriesBurnedChange: (String) -> Unit,
     calorieUiState: CalorieUiState,
@@ -134,12 +154,28 @@ fun WorkoutEditorContent(
     canSave: Boolean,
     editingId: String?,
     weightUnit: WeightUnit,
+    isEstimateLater: Boolean,
+    onEstimateLaterChange: (Boolean) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
+
+    var showDeleteSetConfirm by remember { mutableStateOf<String?>(null) }
+
+    if (showDeleteSetConfirm != null) {
+        DeleteConfirmationDialog(
+            title = "Remove Set",
+            message = "Are you sure you want to remove this set?",
+            onConfirm = {
+                onRemoveSet(showDeleteSetConfirm!!)
+                showDeleteSetConfirm = null
+            },
+            onDismiss = { showDeleteSetConfirm = null }
+        )
+    }
 
     Box(
         modifier = modifier
@@ -273,6 +309,31 @@ fun WorkoutEditorContent(
                     }
                 }
 
+                // Tabs for Strength/Cardio
+                PrimaryTabRow(
+                    selectedTabIndex = if (exerciseType == "strength") 0 else 1,
+                    containerColor = Color.Transparent,
+                    divider = {},
+                    indicator = { TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(if (exerciseType == "strength") 0 else 1, true),
+                        width = 64.dp,
+                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                    ) }
+                ) {
+                    Tab(
+                        selected = exerciseType == "strength",
+                        onClick = { onExerciseTypeChange("strength") },
+                        text = { Text("Strength") }
+                    )
+                    Tab(
+                        selected = exerciseType == "cardio",
+                        onClick = { onExerciseTypeChange("cardio") },
+                        text = { Text("Cardio") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Previous matching reference log
                 lastMatchingLog?.let { prevLog ->
                     Card(
@@ -299,23 +360,32 @@ fun WorkoutEditorContent(
                                 )
                             }
                             Spacer(modifier = Modifier.height(12.dp))
-                            prevLog.sets.forEachIndexed { index, set ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Set ${index + 1}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
-                                    Text(
-                                        text = "${set.weight} ${set.unit.displayName} x ${set.reps}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                            if (prevLog.exerciseType == "strength") {
+                                prevLog.sets.forEachIndexed { index, set ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "Set ${index + 1}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                        Text(
+                                            text = "${set.weight} ${set.unit.displayName} x ${set.reps}",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
                                 }
+                            } else {
+                                Text(
+                                    text = "${prevLog.cardioAmount ?: 0.0} ${prevLog.cardioUnit ?: "minutes"}",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
                             if (prevLog.notes.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -329,7 +399,194 @@ fun WorkoutEditorContent(
                     }
                 }
 
-                // Sets List Section
+                // Sets List Section (Strength) or Duration/Amount (Cardio)
+                if (exerciseType == "strength") {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "CURRENT SESSION",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Header
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text("Set", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.width(48.dp))
+                                Text(weightUnit.displayName.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                                Text("Reps", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                                Spacer(Modifier.width(48.dp))
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                            Spacer(Modifier.height(8.dp))
+
+                            draftSets.forEachIndexed { index, set ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.width(48.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    OutlinedTextField(
+                                        value = set.weight,
+                                        onValueChange = { input ->
+                                            val filtered = input.filter { it.isDigit() || it == '.' }
+                                            if (filtered.count { it == '.' } <= 1) {
+                                                onUpdateSet(index, filtered, set.reps)
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag("set_weight_input_$index"),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                            focusedContainerColor = MaterialTheme.colorScheme.background
+                                        ),
+                                        singleLine = true
+                                    )
+
+                                    OutlinedTextField(
+                                        value = set.reps,
+                                        onValueChange = { input ->
+                                            val filtered = input.filter { it.isDigit() }
+                                            onUpdateSet(index, set.weight, filtered)
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag("set_reps_input_$index"),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                            focusedContainerColor = MaterialTheme.colorScheme.background
+                                        ),
+                                        singleLine = true
+                                    )
+
+                                    IconButton(
+                                        onClick = {
+                                            focusManager.clearFocus()
+                                            showDeleteSetConfirm = set.id
+                                        },
+                                        enabled = draftSets.size > 1,
+                                        modifier = Modifier.testTag("delete_set_button_$index")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Delete set",
+                                            tint = if (draftSets.size > 1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
+                                }
+                            }
+
+                            Button(
+                                onClick = {
+                                    focusManager.clearFocus()
+                                    onAddSet()
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(Icons.Default.Add, null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Add Set", style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+                } else {
+                    // Cardio Section
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                            Text(
+                                text = "DURATION / AMOUNT",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = cardioAmount,
+                                    onValueChange = onCardioAmountChange,
+                                    placeholder = { Text("0") },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true
+                                )
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                        .padding(4.dp)
+                                ) {
+                                    listOf("minutes", "steps", "km", "miles").forEach { unit ->
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (cardioUnit == unit) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                                .clickable { onCardioUnitChange(unit) }
+                                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = unit,
+                                                color = if (cardioUnit == unit) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Estimation Section
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -345,134 +602,70 @@ fun WorkoutEditorContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "CURRENT SESSION",
+                                text = "CALORIES BURNED",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Header
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text("Set", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.width(48.dp))
-                            Text(weightUnit.displayName.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            Text("Reps", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            Spacer(Modifier.width(48.dp))
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-                        Spacer(Modifier.height(8.dp))
-
-                        draftSets.forEachIndexed { index, set ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "${index + 1}",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.width(48.dp),
-                                    textAlign = TextAlign.Center
+                                    text = "Estimate Later",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Switch(
+                                    checked = isEstimateLater,
+                                    onCheckedChange = onEstimateLaterChange,
+                                    modifier = Modifier.scale(0.8f).testTag("estimate_later_toggle")
                                 )
 
-                                OutlinedTextField(
-                                    value = set.weight,
-                                    onValueChange = { input ->
-                                        val filtered = input.filter { it.isDigit() || it == '.' }
-                                        if (filtered.count { it == '.' } <= 1) {
-                                            onUpdateSet(index, filtered, set.reps)
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .testTag("set_weight_input_$index"),
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                                        focusedContainerColor = MaterialTheme.colorScheme.background
-                                    ),
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = set.reps,
-                                    onValueChange = { input ->
-                                        val filtered = input.filter { it.isDigit() }
-                                        onUpdateSet(index, set.weight, filtered)
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .testTag("set_reps_input_$index"),
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                                        focusedContainerColor = MaterialTheme.colorScheme.background
-                                    ),
-                                    singleLine = true
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        focusManager.clearFocus()
-                                        onRemoveSet(set.id)
-                                    },
-                                    enabled = draftSets.size > 1,
-                                    modifier = Modifier.testTag("delete_set_button_$index")
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Delete set",
-                                        tint = if (draftSets.size > 1) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant
+                                if (!isEstimateLater) {
+                                    Spacer(Modifier.width(8.dp))
+                                    AiEstimateButton(
+                                        uiState = calorieUiState,
+                                        onClick = onEstimateCalorieBurn,
+                                        onDismissError = onResetCalorieUiState,
+                                        onShowAssumptions = onShowAssumptions
                                     )
                                 }
                             }
                         }
 
-                        Button(
-                            onClick = {
-                                focusManager.clearFocus()
-                                onAddSet()
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Icon(Icons.Default.Add, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Add Set", style = MaterialTheme.typography.bodyLarge)
-                        }
-
                         Spacer(Modifier.height(16.dp))
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.Bottom) {
                             OutlinedTextField(
-                                value = caloriesBurned,
+                                value = if (isEstimateLater) "" else caloriesBurned,
                                 onValueChange = onCaloriesBurnedChange,
-                                label = { Text("Est. Burned Calories") },
-                                modifier = Modifier.weight(1f),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                placeholder = { Text(if (isEstimateLater) "TBD" else "0") },
+                                enabled = !isEstimateLater,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("workout_calories_input"),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.Transparent,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledBorderColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent
+                                ),
+                                textStyle = MaterialTheme.typography.displaySmall,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                singleLine = true
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Text("kcal", color = MaterialTheme.colorScheme.outline)
-                            Spacer(Modifier.width(8.dp))
-                            AiEstimateButton(
-                                uiState = calorieUiState,
-                                onClick = onEstimateCalorieBurn,
-                                onDismissError = onResetCalorieUiState,
-                                onShowAssumptions = onShowAssumptions
+                            Text(
+                                "kcal",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.padding(bottom = 8.dp)
                             )
                         }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
 
@@ -509,7 +702,8 @@ fun WorkoutEditorContent(
                         )
                     }
                 }
-                Spacer(Modifier.height(120.dp))
+
+                Spacer(modifier = Modifier.height(120.dp))
             }
         }
 
@@ -552,6 +746,8 @@ fun WorkoutEditorPreview() {
         WorkoutEditorContent(
             exerciseName = "Bench Press",
             onExerciseNameChange = {},
+            exerciseType = "strength",
+            onExerciseTypeChange = {},
             draftSets = listOf(
                 WorkoutSet(weight = "135", reps = "10"),
                 WorkoutSet(weight = "185", reps = "8"),
@@ -560,6 +756,10 @@ fun WorkoutEditorPreview() {
             onUpdateSet = { _, _, _ -> },
             onAddSet = {},
             onRemoveSet = {},
+            cardioAmount = "",
+            onCardioAmountChange = {},
+            cardioUnit = "minutes",
+            onCardioUnitChange = {},
             notes = "Felt good, stable bar path.",
             onNotesChange = {},
             showingSuggestions = false,
@@ -574,6 +774,8 @@ fun WorkoutEditorPreview() {
             canSave = true,
             editingId = null,
             weightUnit = WeightUnit.KG,
+            isEstimateLater = false,
+            onEstimateLaterChange = {},
             caloriesBurned = "",
             onCaloriesBurnedChange = {},
             calorieUiState = CalorieUiState.Idle,

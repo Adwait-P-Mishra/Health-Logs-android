@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.adprmi.healthLogs.ui.theme.MyApplicationTheme
 import com.adprmi.healthLogs.ui.theme.ThemePreviews
+import com.adprmi.healthLogs.ui.components.DeleteConfirmationDialog
 import com.adprmi.healthLogs.data.MealEntity
 import com.adprmi.healthLogs.util.DateUtils
 import com.adprmi.healthLogs.viewmodel.MealViewModel
@@ -63,6 +64,20 @@ fun MealHistoryContent(
     onDeleteLog: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDeleteLogConfirm by remember { mutableStateOf<String?>(null) }
+
+    if (showDeleteLogConfirm != null) {
+        DeleteConfirmationDialog(
+            title = "Delete History Entry",
+            message = "Are you sure you want to delete this meal log from history?",
+            onConfirm = {
+                onDeleteLog(showDeleteLogConfirm!!)
+                showDeleteLogConfirm = null
+            },
+            onDismiss = { showDeleteLogConfirm = null }
+        )
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -188,7 +203,7 @@ fun MealHistoryContent(
                                     }
 
                                     IconButton(
-                                        onClick = { onDeleteLog(log.id) },
+                                        onClick = { showDeleteLogConfirm = log.id },
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
