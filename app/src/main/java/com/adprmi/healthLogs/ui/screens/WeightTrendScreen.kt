@@ -255,12 +255,6 @@ fun WeightListItem(weight: WeightEntity, unit: WeightUnit) {
                     fontWeight = FontWeight.Bold
                 )
             }
-            
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.TrendingFlat,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-            )
         }
     }
 }

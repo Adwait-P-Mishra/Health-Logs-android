@@ -52,9 +52,9 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme(darkTheme = useDarkTheme) {
                 AppNavigation(
                     factory = factory,
-                    isDarkTheme = useDarkTheme,
-                    onToggleTheme = {
-                        preferenceRepository.setIsDarkMode(!useDarkTheme)
+                    isDarkMode = isDarkMode,
+                    onSetThemeMode = { mode ->
+                        preferenceRepository.setIsDarkMode(mode)
                     },
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -66,8 +66,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     factory: ViewModelFactory,
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
+    isDarkMode: Boolean?,
+    onSetThemeMode: (Boolean?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -248,8 +248,8 @@ fun AppNavigation(
         composable("settings") {
             SettingsScreen(
                 settingsViewModel = settingsViewModel,
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme,
+                isDarkMode = isDarkMode,
+                onSetThemeMode = onSetThemeMode,
                 onBack = { navController.popBackStack() },
                 onNavigateToAiSetup = {
                     val config = settingsViewModel.aiProviderConfig.value

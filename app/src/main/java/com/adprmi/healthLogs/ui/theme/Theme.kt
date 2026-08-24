@@ -7,16 +7,16 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = InversePrimary,
-    onPrimary = InverseSurface,
+    primary = PrimaryDark,
+    onPrimary = OnPrimary,
     primaryContainer = PrimaryContainer,
     onPrimaryContainer = OnPrimaryContainer,
-    secondary = SecondaryFixedDim,
-    onSecondary = OnSecondaryFixed,
+    secondary = SecondaryDark,
+    onSecondary = OnSecondary,
     secondaryContainer = SecondaryContainer,
     onSecondaryContainer = OnSecondaryContainer,
-    tertiary = TertiaryFixedDim,
-    onTertiary = OnTertiaryFixed,
+    tertiary = TertiaryDark,
+    onTertiary = OnTertiary,
     tertiaryContainer = TertiaryContainer,
     onTertiaryContainer = OnTertiaryContainer,
     background = OnBackground,

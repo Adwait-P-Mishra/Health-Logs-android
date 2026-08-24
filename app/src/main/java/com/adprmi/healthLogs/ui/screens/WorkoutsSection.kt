@@ -101,7 +101,7 @@ fun WorkoutsSection(
                 Surface(
                     onClick = onLogWorkoutClicked,
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground),
                     color = Color.Transparent,
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
@@ -113,13 +113,13 @@ fun WorkoutsSection(
                         Icon(
                             imageVector = Icons.Default.FitnessCenter,
                             contentDescription = "Log Workout",
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(18.dp)
                         )
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -170,7 +170,7 @@ fun WorkoutsSection(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit weight",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -268,7 +268,7 @@ fun WorkoutsSection(
                                     Icon(
                                         imageVector = Icons.Default.Edit,
                                         contentDescription = "Edit set",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
                             }

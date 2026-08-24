@@ -86,7 +86,7 @@ fun NutritionSection(
                 Surface(
                     onClick = onLogMealClicked,
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground),
                     color = Color.Transparent,
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
@@ -98,13 +98,13 @@ fun NutritionSection(
                         Icon(
                             imageVector = Icons.Default.Fastfood,
                             contentDescription = "Log Meal",
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(18.dp)
                         )
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -139,7 +139,7 @@ fun NutritionSection(
                                 Text(
                                     text = NumberFormat.getNumberInstance(Locale.getDefault()).format(totalCalories),
                                     style = MaterialTheme.typography.displaySmall,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                                 if (formattedTarget != null) {
                                     Text(
@@ -168,14 +168,14 @@ fun NutritionSection(
                                 CircularProgressIndicator(
                                     progress = { (totalCalories / targetCalories.toFloat()).coerceIn(0f, 1f) },
                                     modifier = Modifier.fillMaxSize(),
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     strokeWidth = 4.dp,
                                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                                 )
                                 Text(
                                     text = "${((totalCalories / targetCalories.toFloat()) * 100).toInt()}%",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                             }
                         }

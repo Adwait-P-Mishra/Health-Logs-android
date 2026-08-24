@@ -63,3 +63,8 @@ val TertiaryFixed = Color(0xFFFFDBCF)
 val TertiaryFixedDim = Color(0xFFF2BAA6)
 val OnTertiaryFixed = Color(0xFF311307)
 val OnTertiaryFixedVariant = Color(0xFF643D2E)
+
+// Dark Mode Specific Refinements
+val PrimaryDark = Color(0xFF00605A) // More vibrant teal for dark background
+val SecondaryDark = Color(0xFFD84315) // More vibrant coral for dark background
+val TertiaryDark = Color(0xFF795548) // More vibrant brown for dark background

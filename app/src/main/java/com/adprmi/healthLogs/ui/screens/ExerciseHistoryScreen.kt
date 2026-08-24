@@ -87,7 +87,7 @@ fun ExerciseHistoryContent(
                         Text(
                             text = "$exerciseName History",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     navigationIcon = {
@@ -178,7 +178,7 @@ fun ExerciseHistoryContent(
                                     Icon(
                                         imageVector = Icons.Default.Event,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
@@ -186,7 +186,7 @@ fun ExerciseHistoryContent(
                                         text = DateUtils.formatDate(Date(log.date), "MMM d, yyyy"),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
 
@@ -237,7 +237,7 @@ fun ExerciseHistoryContent(
                                         Text(
                                             text = set.weight,
                                             style = MaterialTheme.typography.displaySmall,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         Spacer(Modifier.width(4.dp))
                                         Text(set.unit.displayName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -247,7 +247,7 @@ fun ExerciseHistoryContent(
                                         Text(
                                             text = set.reps,
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         Spacer(Modifier.width(4.dp))
                                         Text("reps", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -167,7 +167,7 @@ fun MealEditorContent(
                     Text(
                         text = if (editingId == null) "Add Meal" else "Edit Meal",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 },
                 navigationIcon = {
@@ -340,30 +340,24 @@ fun MealEditorContent(
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                        }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Switch(
+                                    checked = isEstimateLater,
+                                    onCheckedChange = onEstimateLaterChange,
+                                    modifier = Modifier.scale(0.8f).testTag("estimate_later_toggle")
+                                )
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "Estimate Later",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Switch(
-                                checked = isEstimateLater,
-                                onCheckedChange = onEstimateLaterChange,
-                                modifier = Modifier.scale(0.8f).testTag("estimate_later_toggle")
-                            )
-
-                            if (!isEstimateLater) {
                                 Spacer(Modifier.width(8.dp))
                                 AiEstimateButton(
                                     uiState = calorieUiState,
                                     onClick = onEstimateCalories,
                                     onDismissError = onResetCalorieUiState,
-                                    onShowAssumptions = onShowAssumptions
+                                    onShowAssumptions = onShowAssumptions,
+                                    label = if (isEstimateLater) "Later" else "Estimate",
+                                    enabled = !isEstimateLater
                                 )
                             }
+
                         }
 
                         Spacer(Modifier.height(16.dp))
@@ -372,7 +366,7 @@ fun MealEditorContent(
 
                         // Calories
                         Text(
-                            text = "TOTAL CALORIES",
+                            text = "TOTAL CALORIES (kcal)",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -385,24 +379,15 @@ fun MealEditorContent(
                                 modifier = Modifier
                                     .weight(1f)
                                     .testTag("meal_calories_input"),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.Transparent,
-                                    unfocusedBorderColor = Color.Transparent,
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    disabledBorderColor = Color.Transparent,
-                                    disabledContainerColor = Color.Transparent
-                                ),
                                 textStyle = MaterialTheme.typography.displaySmall,
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number,
                                     imeAction = ImeAction.Next
                                 ),
-                                singleLine = true
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
                             )
-                            Text("kcal", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(bottom = 8.dp))
                         }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                         Spacer(Modifier.height(16.dp))
 
@@ -425,7 +410,7 @@ fun MealEditorContent(
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
                             text = "NOTES (OPTIONAL)",
                             style = MaterialTheme.typography.labelMedium,

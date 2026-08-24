@@ -205,7 +205,7 @@ fun DailyMealContent(
                                     Icon(
                                         imageVector = Icons.Default.Fastfood,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(24.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)).padding(4.dp)
                                     )
                                     Spacer(Modifier.width(12.dp))
@@ -213,7 +213,7 @@ fun DailyMealContent(
                                         Text(
                                             text = log.mealName,
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         Text("Healthy • Nutrition", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
@@ -257,13 +257,13 @@ fun DailyMealContent(
                                     Text(
                                         text = "${log.calories}",
                                         style = MaterialTheme.typography.displaySmall,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = "kcal",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
                             }

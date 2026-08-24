@@ -74,20 +74,20 @@ fun SplashContent(
                 Icon(
                     imageVector = Icons.Default.FitnessCenter,
                     contentDescription = "Fitness Icon",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(32.dp)
                 )
 
                 VerticalDivider(Modifier
                     .padding(horizontal = 4.dp)
                     .size(width = 1.dp, height = 32.dp),
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Icon(
                     imageVector = Icons.Default.Fastfood,
                     contentDescription = "Food Icon",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -95,14 +95,14 @@ fun SplashContent(
                 Modifier
                     .padding(vertical = 4.dp)
                     .size(width = 80.dp, height = 1.dp),
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = "Health Logs",
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 14.sp),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }

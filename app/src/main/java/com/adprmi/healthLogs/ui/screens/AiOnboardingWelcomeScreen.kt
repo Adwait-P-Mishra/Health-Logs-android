@@ -36,13 +36,12 @@ fun AiOnboardingWelcomeScreen(
     onSetUpAi: () -> Unit,
     onSkip: () -> Unit
 ) {
-    MyApplicationTheme(darkTheme = false) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)
-                .safeDrawingPadding()
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .safeDrawingPadding()
+    ) {
             // Decorative Ambient Glow
             Box(
                 modifier = Modifier
@@ -141,7 +140,6 @@ fun AiOnboardingWelcomeScreen(
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -205,14 +203,14 @@ fun AiIllustration() {
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp),
-                    tint = SecondaryFixed
+                    tint = MaterialTheme.colorScheme.secondary
                 )
                 Icon(
                     imageVector = Icons.Default.Restaurant,
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp),
-                    tint = PrimaryFixed
+                    tint = Color.Cyan
                 )
             }
         }

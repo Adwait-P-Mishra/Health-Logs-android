@@ -24,7 +24,8 @@ fun AiEstimateButton(
     onClick: () -> Unit,
     onDismissError: () -> Unit,
     onShowAssumptions: (List<String>, String) -> Unit,
-    label: String = "Estimate"
+    label: String = "Estimate",
+    enabled: Boolean = true
 ) {
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -72,11 +73,14 @@ fun AiEstimateButton(
             else -> {
                 Button(
                     onClick = onClick,
+                    enabled = enabled,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                     )
                 ) {
                     Text(label, style = MaterialTheme.typography.labelMedium)

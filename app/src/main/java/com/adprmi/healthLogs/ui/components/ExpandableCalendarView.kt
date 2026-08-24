@@ -121,7 +121,7 @@ fun ExpandableCalendarView(
                         Icon(
                             imageVector = Icons.Default.Today,
                             contentDescription = "Go to Today",
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(20.dp)
                         )
                     }

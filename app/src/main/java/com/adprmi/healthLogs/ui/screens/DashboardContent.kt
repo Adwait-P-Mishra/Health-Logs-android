@@ -70,7 +70,7 @@ fun DashboardContent(
                         Text(
                             text = "Health Logs",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     },
                     navigationIcon = {},

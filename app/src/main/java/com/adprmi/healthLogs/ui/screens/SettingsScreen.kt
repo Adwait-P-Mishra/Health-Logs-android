@@ -30,8 +30,8 @@ import kotlin.math.roundToInt
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
+    isDarkMode: Boolean?,
+    onSetThemeMode: (Boolean?) -> Unit,
     onBack: () -> Unit,
     onNavigateToAiSetup: () -> Unit,
     onResetApp: () -> Unit,
@@ -60,9 +60,9 @@ fun SettingsScreen(
     SettingsScreenContent(
         targetCalories = targetCalories,
         weightUnit = weightUnit,
-        isDarkTheme = isDarkTheme,
+        isDarkMode = isDarkMode,
         aiProviderConfig = aiProviderConfig,
-        onToggleTheme = onToggleTheme,
+        onSetThemeMode = onSetThemeMode,
         onBack = onBack,
         onSetTargetCalories = { settingsViewModel.setTargetCalories(it) },
         onSetWeightUnit = { settingsViewModel.setWeightUnit(it) },
@@ -85,12 +85,12 @@ fun SettingsScreen(
 fun SettingsScreenContent(
     targetCalories: Int?,
     weightUnit: WeightUnit,
-    isDarkTheme: Boolean,
+    isDarkMode: Boolean?,
     aiProviderConfig: AiProviderConfig?,
     userHeightCm: Double?,
     userGender: String?,
     heightUnit: com.adprmi.healthLogs.model.HeightUnit,
-    onToggleTheme: () -> Unit,
+    onSetThemeMode: (Boolean?) -> Unit,
     onBack: () -> Unit,
     onSetTargetCalories: (Int?) -> Unit,
     onSetWeightUnit: (WeightUnit) -> Unit,
@@ -108,6 +108,49 @@ fun SettingsScreenContent(
     var showTargetCalorieDialog by remember { mutableStateOf(value = false) }
     var showWeightUnitDialog by remember { mutableStateOf(value = false) }
     var showProfileDialog by remember { mutableStateOf(value = false) }
+    var showThemeDialog by remember { mutableStateOf(value = false) }
+
+    if (showThemeDialog) {
+        AlertDialog(
+            onDismissRequest = { showThemeDialog = false },
+            title = { Text("Select Theme Mode") },
+            text = {
+                Column {
+                    listOf(
+                        null to "System Default",
+                        false to "Light Mode",
+                        true to "Dark Mode"
+                    ).forEach { (value, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onSetThemeMode(value)
+                                    showThemeDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isDarkMode == value,
+                                onClick = {
+                                    onSetThemeMode(value)
+                                    showThemeDialog = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showThemeDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
 
     if (showProfileDialog) {
         var tempHeightCm by remember { mutableStateOf(userHeightCm?.toString() ?: "") }
@@ -371,19 +414,29 @@ fun SettingsScreenContent(
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             ListItem(
-                headlineContent = { Text(if (isDarkTheme) "Switch to Light Mode" else "Switch to Dark Mode") },
+                headlineContent = { Text("App Theme") },
+                supportingContent = {
+                    Text(
+                        when (isDarkMode) {
+                            null -> "System Default"
+                            true -> "Dark Mode"
+                            false -> "Light Mode"
+                        }
+                    )
+                },
                 leadingContent = {
                     Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        imageVector = when (isDarkMode) {
+                            true -> Icons.Default.DarkMode
+                            false -> Icons.Default.LightMode
+                            null -> Icons.Default.SettingsSuggest
+                        },
                         contentDescription = null
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onToggleTheme() },
-                trailingContent = {
-                    Switch(checked = isDarkTheme, onCheckedChange = { onToggleTheme() })
-                }
+                    .clickable { showThemeDialog = true }
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
@@ -470,12 +523,12 @@ fun SettingsScreenPreview() {
         SettingsScreenContent(
             targetCalories = 2000,
             weightUnit = WeightUnit.KG,
-            isDarkTheme = false,
+            isDarkMode = null,
             aiProviderConfig = AiProviderConfig("Gemini", "...", "key", "gemini-flash"),
             userHeightCm = 175.0,
             userGender = "male",
             heightUnit = HeightUnit.CM,
-            onToggleTheme = {},
+            onSetThemeMode = {},
             onBack = {},
             onSetTargetCalories = {},
             onSetWeightUnit = {},

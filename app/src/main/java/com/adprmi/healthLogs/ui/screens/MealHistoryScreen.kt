@@ -86,7 +86,7 @@ fun MealHistoryContent(
                         Text(
                             text = "$mealName History",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     navigationIcon = {
@@ -177,7 +177,7 @@ fun MealHistoryContent(
                                     Icon(
                                         imageVector = Icons.Default.Event,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
@@ -185,7 +185,7 @@ fun MealHistoryContent(
                                         text = DateUtils.formatDate(Date(log.date), "MMM d, yyyy"),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
 
@@ -227,7 +227,7 @@ fun MealHistoryContent(
                                     Text(
                                         text = "${log.calories}",
                                         style = MaterialTheme.typography.displaySmall,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(

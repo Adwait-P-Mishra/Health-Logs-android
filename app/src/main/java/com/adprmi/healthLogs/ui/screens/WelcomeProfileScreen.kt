@@ -44,13 +44,12 @@ fun WelcomeProfileScreen(
         (heightUnit == HeightUnit.FT_IN && heightFt.toDoubleOrNull() != null && heightIn.toDoubleOrNull() != null)
     )
 
-    MyApplicationTheme(darkTheme = false) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)
-                .safeDrawingPadding()
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .safeDrawingPadding()
+    ) {
             TextButton(
                 onClick = onSkip,
                 modifier = Modifier
@@ -270,9 +269,7 @@ fun WelcomeProfileScreen(
                     )
                 }
             }
-
     }
-}
 }
 
 

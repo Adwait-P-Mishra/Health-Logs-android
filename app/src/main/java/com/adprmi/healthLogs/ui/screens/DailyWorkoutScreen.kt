@@ -254,61 +254,11 @@ fun DailyWorkoutContent(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit weight",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
             }
-//            Card(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp),
-//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
-//                shape = RoundedCornerShape(12.dp)
-//            ) {
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .clickable { onWeightTrendClick() }
-//                        .padding(16.dp),
-//                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Row(
-//                        modifier = Modifier.weight(1f),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.MonitorWeight,
-//                            contentDescription = null,
-//                            tint = MaterialTheme.colorScheme.secondary
-//                        )
-//                        Spacer(Modifier.width(12.dp))
-//                        Column {
-//                            Text(
-//                                text = "Current Weight",
-//                                style = MaterialTheme.typography.labelMedium,
-//                                color = MaterialTheme.colorScheme.onSecondaryContainer
-//                            )
-//                            Text(
-//                                text = "$userWeightKg ${weightUnit.displayName}",
-//                                style = MaterialTheme.typography.titleMedium,
-//                                fontWeight = FontWeight.Bold,
-//                                color = MaterialTheme.colorScheme.onSecondaryContainer
-//                            )
-//                        }
-//                    }
-//                    Text(
-//                        text = "Update",
-//                        style = MaterialTheme.typography.labelLarge,
-//                        color = MaterialTheme.colorScheme.secondary,
-//                        fontWeight = FontWeight.Bold,
-//                        modifier = Modifier
-//                            .clickable { showUserWeightDialog = true }
-//                            .padding(8.dp)
-//                    )
-//                }
-//            }
 
             if (dailyLogs.isEmpty()) {
                 Box(
@@ -357,7 +307,7 @@ fun DailyWorkoutContent(
                                     Icon(
                                         imageVector = Icons.Default.FitnessCenter,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(24.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)).padding(4.dp)
                                     )
                                     Spacer(Modifier.width(12.dp))
@@ -365,7 +315,7 @@ fun DailyWorkoutContent(
                                         Text(
                                             text = log.exerciseName,
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         log.caloriesBurned?.takeIf { it > 0 }?.let {
                                             Text("$it kcal burned", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -420,7 +370,7 @@ fun DailyWorkoutContent(
                                         Text(
                                             text = set.weight,
                                             style = MaterialTheme.typography.displaySmall,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         Spacer(Modifier.width(4.dp))
                                         Text(set.unit.displayName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -430,7 +380,7 @@ fun DailyWorkoutContent(
                                         Text(
                                             text = set.reps,
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                         Spacer(Modifier.width(4.dp))
                                         Text("reps", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

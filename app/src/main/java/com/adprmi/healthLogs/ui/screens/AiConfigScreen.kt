@@ -56,28 +56,26 @@ fun AiConfigScreen(
         }
     }
 
-    MyApplicationTheme(darkTheme = false) {
-        when (currentStep) {
-            AiConfigStep.CONFIG -> {
-                AiConfigContent(
-                    isTesting = isTesting,
-                    testResult = testResult,
-                    aiProviderConfig = aiProviderConfig,
-                    isHosted = isHosted,
-                    onTestConnection = { viewModel.testConnection(it) },
-                    onSetAiProviderConfig = { viewModel.setAiProviderConfig(it) },
-                    onSetAiOnboardingShown = { viewModel.setAiOnboardingShown(it) },
-                    onBack = onBack
-                )
-            }
-            AiConfigStep.SUCCESS -> {
-                AiConnectionSuccessContent(
-                    onGoToDashboard = {
-                        viewModel.resetTestResult()
-                        onSuccess()
-                    }
-                )
-            }
+    when (currentStep) {
+        AiConfigStep.CONFIG -> {
+            AiConfigContent(
+                isTesting = isTesting,
+                testResult = testResult,
+                aiProviderConfig = aiProviderConfig,
+                isHosted = isHosted,
+                onTestConnection = { viewModel.testConnection(it) },
+                onSetAiProviderConfig = { viewModel.setAiProviderConfig(it) },
+                onSetAiOnboardingShown = { viewModel.setAiOnboardingShown(it) },
+                onBack = onBack
+            )
+        }
+        AiConfigStep.SUCCESS -> {
+            AiConnectionSuccessContent(
+                onGoToDashboard = {
+                    viewModel.resetTestResult()
+                    onSuccess()
+                }
+            )
         }
     }
 }
@@ -127,7 +125,7 @@ fun AiConfigContent(
                         "Health Logs",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.secondary
                     ) 
                 },
                 navigationIcon = {

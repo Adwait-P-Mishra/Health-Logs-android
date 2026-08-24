@@ -31,10 +31,9 @@ fun AiEndpointChoiceScreen(
     onChoice: (Boolean) -> Unit, // true for hosted, false for local
     onBack: () -> Unit
 ) {
-    MyApplicationTheme(darkTheme = false) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
                 TopAppBar(
                     title = {},
                     navigationIcon = {
@@ -68,7 +67,7 @@ fun AiEndpointChoiceScreen(
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp
                     ),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -107,14 +106,14 @@ fun AiEndpointChoiceScreen(
                                 Text(
                                     text = "Gemini Key",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                                 Spacer(Modifier.width(4.dp))
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                     contentDescription = null,
                                     modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = MaterialTheme.colorScheme.onBackground
                                 )
                             }
                         }
@@ -136,7 +135,6 @@ fun AiEndpointChoiceScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
-    }
 }
 
 @Composable
