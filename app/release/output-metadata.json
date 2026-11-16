@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.adprmi.healthLogs",
+  "applicationId": "com.mishrAdwait.healthLogs",
   "variantName": "release",
   "elements": [
     {

@@ -19,13 +19,10 @@ A modern, focused Android application designed to streamline your fitness and nu
 
 - **Workout Logging**: Track exercises, sets, weight, and reps with ease.
 - **Nutrition Tracking**: Log meals with calories and optional macros (protein, carbs, fat).
-- **BYOK AI Integration**: "Bring Your Own Key" AI support for OpenAI, Gemini, Groq, and local endpoints (Ollama/LM Studio). Use AI to estimate meal calories or workout burn.
-- **AI Transparency**: View the exact prompt and logical assumptions the AI used for every estimation through the **AI Details** bottom sheet.
 - **Smart Weight Tracking**: Log your weight daily with a "one entry per day" constraint. Auto-populates from your last entry to reduce friction.
 - **Weight Trends**: Tasteful trend charts with X and Y axis labels to visualize your progress over time.
-- **Personalized Profiles**: Set your height (cm or ft/in) and gender to provide the AI with more context for accurate physiological estimations.
+- **Personalized Profiles**: Set your height (cm or ft/in) and gender.
 - **Data Sovereignty**: Import/Export your entire database via JSON files. Your data stays with you.
-- **Secure Storage**: API keys are stored securely on-device using the Android Keystore system.
 - **Adaptive UI**: Full support for Light and Dark modes using Material 3.
 - **Date Navigation**: Use the built-in calendar to review or log data for any day in your fitness journey.
 
@@ -36,12 +33,12 @@ A modern, focused Android application designed to streamline your fitness and nu
 ### Light Mode
 | Dashboard | Workout Editor | Meal Editor | Daily Workouts | Daily Meals | Settings |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="app/src/main/app/src/main/assets/screenshots/1.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/2.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/3.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/4.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/5.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/6.jpg" width="220" /> |
+| <img src="app/src/main/assets/screenshots/1.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/2.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/3.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/4.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/5.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/6.jpg" width="220" /> |
 
 ### Dark Mode
 | Dashboard | Workout Editor | Meal Editor | Daily Workouts | Daily Meals | Settings |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="app/src/main/app/src/main/assets/screenshots/1_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/2_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/3_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/4_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/5_dark.jpg" width="220" /> | <img src="app/src/main/app/src/main/assets/screenshots/6_dark.jpg" width="220" /> |
+| <img src="app/src/main/assets/screenshots/1_dark.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/2_dark.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/3_dark.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/4_dark.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/5_dark.jpg" width="220" /> | <img src="app/src/main/assets/screenshots/6_dark.jpg" width="220" /> |
 
 ---
 
@@ -88,7 +85,7 @@ A modern, focused Android application designed to streamline your fitness and nu
 
 ## Project Structure
 
-The project follows a feature-oriented package structure within `com.adprmi.healthLogs`:
+The project follows a feature-oriented package structure within `com.mishrAdwait.healthLogs`:
 
 - `ui/`: Contains Compose screens (`screens/`), reusable components (`components/`), and themes.
 - `data/`: Room entities, DAOs, and repositories for data orchestration.

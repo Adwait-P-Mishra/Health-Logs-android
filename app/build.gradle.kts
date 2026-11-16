@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-  namespace = "com.adprmi.healthLogs"
+  namespace = "com.mishrAdwait.healthLogs"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.adprmi.healthLogs"
+    applicationId = "com.mishrAdwait.healthLogs"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
