@@ -1,8 +1,0 @@
-- [x] Create `ic_launcher_foreground.xml` (Barbell Vector - OLD)
-- [x] Update `ic_launcher_background.xml` (White - OLD)
-- [x] Create `StoreAssetsPreview.kt` for Play Store assets
-- [x] Update `ic_launcher_foreground.xml` to Nutrition + Training design
-- [x] Update `ic_launcher_background.xml` to Black
-- [x] Update `StoreAssetsPreview.kt` for new design
-- [x] Render Previews and verify
-- [x] Update walkthrough

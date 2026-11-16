@@ -1,16 +1,44 @@
-*.iml
-.gradle
-.kotlin
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
+# Built application files
+*.apk
+*.aab
+*.aar
+*.dex
+*.class
+app/release/
+release/
+
+# Generated files
 /build
-/captures
+/*/build
+.gradle/
+.kotlin/
 .externalNativeBuild
-.cxx
+.cxx/
+/captures
+
+# Signing / Key store secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+*.crt
+*.key
+my-upload-key.jks
+
+# Local configuration and environment variables
 local.properties
+.env
+.env.*
+secrets.properties
+google-services.json
+google-services.xml
+
+# IDE & OS specific files
+.DS_Store
+*.iml
+.idea/
+!.idea/codeStyles/
+
+# Temporary / Scratch files
+results.txt
+.artifacts/
